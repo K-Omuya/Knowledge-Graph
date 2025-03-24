@@ -1,0 +1,419 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Knowledge Graph System{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Mobile optimizations -->
+    <link rel="stylesheet" href="{% static 'css/mobile.css' %}">
+    <link rel="stylesheet" href="{% static 'css/base">
+    
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+            --danger-color: #e74c3c;
+            --warning-color: #664003;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #f8f9fa;
+        }
+        
+        .main-content {
+            flex: 1;
+        }
+        
+        .navbar-custom {
+            background-color: var(--dark-color);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.4rem;
+        }
+        
+        .navbar-brand i {
+            color: var(--primary-color);
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 1.5rem 0;
+            margin-top: 2rem;
+        }
+        
+        .card {
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            margin-bottom: 1.5rem;
+            border: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            border-radius: 8px 8px 0 0 !important;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+        
+        .btn-success {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+        
+        .btn-danger {
+            background-color: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+        
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        
+        .badge-course {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .badge-ideology {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+        
+        .search-results {
+            position: absolute;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 0 0 8px 8px;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+        
+        /* Page transitions */
+        .page-transition {
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        /* Custom styling for different sections */
+        {% block custom_css %}{% endblock %}
+    </style>
+</head>
+<body {% if request.user_agent.is_mobile %}class="has-mobile-nav"{% endif %}>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'index' %}">
+                <i class="fas fa-project-diagram me-2"></i>Knowledge Graph
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link {% if request.path == '/' %}active{% endif %}" href="{% url 'index' %}">
+                            <i class="fas fa-home me-1"></i> Home
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/nodes/' in request.path %}active{% endif %}" 
+                           href="#" id="nodesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-database me-1"></i> Knowledge Nodes
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="nodesDropdown">
+                            <li><a class="dropdown-item" href="{% url 'node-list' %}">All Nodes</a></li>
+                            <li><a class="dropdown-item" href="{% url 'node-list' %}?type=COURSE">Course Nodes</a></li>
+                            <li><a class="dropdown-item" href="{% url 'node-list' %}?type=IDEOLOGY">Ideological Nodes</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'node-create' %}">Add New Node</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/graph/' in request.path %}active{% endif %}" 
+                           href="#" id="graphDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-project-diagram me-1"></i> Visualizations
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="graphDropdown">
+                            <li><a class="dropdown-item" href="{% url 'graph-visualization' %}">Basic Graph</a></li>
+                            <li><a class="dropdown-item" href="{% url 'advanced-visualization' %}">Advanced Graph</a></li>
+                            <li><a class="dropdown-item" href="{% url 'heatmap' %}">Connection Heatmap</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/learning/' in request.path %}active{% endif %}" 
+                           href="#" id="learningDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-graduation-cap me-1"></i> Learning
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="learningDropdown">
+                            <li><a class="dropdown-item" href="{% url 'learning-paths' %}">Learning Paths</a></li>
+                            <li><a class="dropdown-item" href="{% url 'quizzes' %}">Quizzes</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'my-progress' %}">My Progress</a></li>
+                        </ul>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {% if '/tools/' in request.path %}active{% endif %}" 
+                           href="#" id="toolsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-tools me-1"></i> Tools
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="toolsDropdown">
+                            <li><a class="dropdown-item" href="{% url 'analytics-dashboard' %}">Analytics</a></li>
+                            <li><a class="dropdown-item" href="{% url 'import-export' %}">Import/Export</a></li>
+                            <li><a class="dropdown-item" href="{% url 'relationship-suggestions' %}">Relationship Suggestions</a></li>
+                        </ul>
+                    </li>
+                </ul>
+                
+                <!-- User Menu -->
+                <ul class="navbar-nav ms-auto">
+                    {% if user.is_authenticated %}
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" 
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i> {{ user.username }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'user-profile' %}">
+                                <i class="fas fa-id-card me-2"></i>My Profile
+                            </a></li>
+                            <li><a class="dropdown-item" href="{% url 'my-activity' %}">
+                                <i class="fas fa-history me-2"></i>My Activity
+                            </a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="{% url 'logout' %}">
+                                <i class="fas fa-sign-out-alt me-2"></i>Logout
+                            </a></li>
+                        </ul>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'login' %}">
+                            <i class="fas fa-sign-in-alt me-1"></i> Login
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'register' %}">
+                            <i class="fas fa-user-plus me-1"></i> Register
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                
+                <!-- Search Form -->
+                <form class="d-flex position-relative ms-3" role="search" id="searchForm">
+                    <div class="input-group">
+                        <input class="form-control" type="search" placeholder="Search knowledge..." 
+                               aria-label="Search" id="searchInput">
+                        <button class="btn btn-primary" type="submit">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-results bg-white w-100 rounded border" id="searchResults"></div>
+                </form>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Main Content -->
+    <div class="main-content page-transition">
+        <div class="container my-4">
+            <!-- Messages/Alerts -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+            
+            <!-- Page Content -->
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+    
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h5><i class="fas fa-project-diagram me-2"></i>Knowledge Graph System</h5>
+                    <p class="text-muted">Integrating course knowledge with ideological and political education</p>
+                </div>
+                <div class="col-md-3">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'index' %}" class="text-white">Home</a></li>
+                        <li><a href="{% url 'node-list' %}" class="text-white">Knowledge Nodes</a></li>
+                        <li><a href="{% url 'graph-visualization' %}" class="text-white">Visualization</a></li>
+                        <li><a href="{% url 'learning-paths' %}" class="text-white">Learning Paths</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3">
+                    <h5>Resources</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="{% url 'help-documentation' %}" class="text-white">Documentation</a></li>
+                        <li><a href="{% url 'about' %}" class="text-white">About</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="bg-white">
+            <div class="text-center">
+                <p class="mb-0">&copy; {% now "Y" %} Knowledge Graph System. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Mobile Bottom Navigation -->
+    {% if request.user_agent.is_mobile %}
+    <div class="mobile-bottom-nav">
+        <a href="{% url 'index' %}">
+            <i class="fas fa-home"></i>
+            <span>Home</span>
+        </a>
+        <a href="{% url 'node-list' %}">
+            <i class="fas fa-database"></i>
+            <span>Nodes</span>
+        </a>
+        <a href="{% url 'graph-visualization' %}">
+            <i class="fas fa-project-diagram"></i>
+            <span>Graph</span>
+        </a>
+        <a href="{% url 'learning-paths' %}">
+            <i class="fas fa-graduation-cap"></i>
+            <span>Learn</span>
+        </a>
+        <a href="{% url 'user-profile' %}">
+            <i class="fas fa-user"></i>
+            <span>Profile</span>
+        </a>
+    </div>
+
+    <!-- Floating Action Button for Mobile -->
+    <a href="{% url 'node-create' %}" class="floating-action-btn d-md-none">
+        <i class="fas fa-plus"></i>
+    </a>
+    {% endif %}
+    
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Search Functionality -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const searchForm = document.getElementById('searchForm');
+            const searchInput = document.getElementById('searchInput');
+            const searchResults = document.getElementById('searchResults');
+            
+            searchForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const query = searchInput.value.trim();
+                if (query) {
+                    window.location.href = `{% url 'search-results' %}?q=${query}`;
+                }
+            });
+            
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                if (query.length >= 2) {
+                    fetch(`{% url 'api-search' %}?q=${query}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            searchResults.innerHTML = '';
+                            
+                            if (data.results.length > 0) {
+                                data.results.forEach(result => {
+                                    const resultItem = document.createElement('a');
+                                    resultItem.href = result.url;
+                                    resultItem.className = 'list-group-item list-group-item-action';
+                                    
+                                    const badge = document.createElement('span');
+                                    badge.className = `badge ${result.type === 'COURSE' ? 'badge-course' : 'badge-ideology'} ms-2`;
+                                    badge.textContent = result.type === 'COURSE' ? 'Course' : 'Ideology';
+                                    
+                                    resultItem.textContent = result.title;
+                                    resultItem.appendChild(badge);
+                                    
+                                    searchResults.appendChild(resultItem);
+                                });
+                                searchResults.classList.add('show');
+                            } else {
+                                const noResults = document.createElement('div');
+                                noResults.className = 'list-group-item';
+                                noResults.textContent = 'No results found';
+                                searchResults.appendChild(noResults);
+                                searchResults.classList.add('show');
+                            }
+                        });
+                } else {
+                    searchResults.innerHTML = '';
+                    searchResults.classList.remove('show');
+                }
+            });
+            
+            // Hide search results when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchForm.contains(e.target)) {
+                    searchResults.innerHTML = '';
+                    searchResults.classList.remove('show');
+                }
+            });
+        });
+    </script>
+    
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

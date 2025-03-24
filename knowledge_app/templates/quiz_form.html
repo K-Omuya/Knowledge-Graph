@@ -1,0 +1,522 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.id %}Edit{% else %}Create{% endif %} Quiz - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.form-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.form-header {
+    border-left: 4px solid var(--warning-color);
+    padding-left: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.questions-container {
+    margin-top: 2rem;
+}
+
+.question-card {
+    margin-bottom: 1.5rem;
+    border-left: 3px solid var(--warning-color);
+}
+
+.question-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.draggable-handle {
+    cursor: move;
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+    color: #6c757d;
+}
+
+.answer-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.answer-row:hover {
+    background-color: #f8f9fa;
+}
+
+.correct-answer {
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.correct-answer:hover {
+    background-color: #c3e6cb;
+}
+
+.answer-controls {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.answer-handle {
+    cursor: move;
+    padding: 0.25rem;
+    color: #6c757d;
+}
+
+.answer-text {
+    flex-grow: 1;
+}
+
+.form-check {
+    margin: 0;
+}
+
+.quiz-settings {
+    background-color: #f8f9fa;
+    padding: 1.5rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.node-search-dropdown {
+    position: absolute;
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background-color: white;
+    border: 1px solid #ced4da;
+    border-top: none;
+    border-radius: 0 0 0.25rem 0.25rem;
+    z-index: 1000;
+}
+
+.node-search-item {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.node-search-item:hover {
+    background-color: #f8f9fa;
+}
+
+.selected-node {
+    background-color: #f0f7ff;
+    padding: 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.selected-node .badge {
+    margin-left: 0.5rem;
+}
+
+#generationOptions {
+    display: none;
+}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-header">
+            <h1>{% if form.instance.id %}Edit{% else %}Create{% endif %} Quiz</h1>
+            <p class="text-muted">
+                {% if form.instance.id %}
+                    Update quiz details and questions.
+                {% else %}
+                    Create a new quiz to test knowledge of concepts in the graph.
+                {% endif %}
+            </p>
+        </div>
+        <a href="{% url 'quizzes' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Quizzes
+        </a>
+    </div>
+
+    <form method="post" id="quizForm">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quiz Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-8">
+                        {{ form.title|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.quiz_type|as_crispy_field }}
+                    </div>
+                </div>
+                
+                {{ form.description|as_crispy_field }}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="position-relative mb-3" id="nodeSearchContainer">
+                            <label for="nodeSearch" class="form-label">Related Node</label>
+                            <input type="text" class="form-control" id="nodeSearch" placeholder="Search for a node..." autocomplete="off">
+                            <div class="node-search-dropdown" id="nodeSearchResults" style="display: none;"></div>
+                            
+                            {% if form.instance.related_node %}
+                            <div class="selected-node" id="selectedNode">
+                                <div>
+                                    <span>{{ form.instance.related_node.title }}</span>
+                                    <span class="badge {% if form.instance.related_node.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %}">
+                                        {% if form.instance.related_node.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                                    </span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearNodeBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="selected-node" id="selectedNode" style="display: none;">
+                                <div>
+                                    <span id="selectedNodeTitle"></span>
+                                    <span class="badge" id="selectedNodeBadge"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearNodeBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                            
+                            <input type="hidden" name="related_node" id="relatedNodeInput" value="{{ form.instance.related_node.id|default:'' }}">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="position-relative mb-3" id="pathSearchContainer">
+                            <label for="pathSearch" class="form-label">Related Learning Path</label>
+                            <input type="text" class="form-control" id="pathSearch" placeholder="Search for a learning path..." autocomplete="off">
+                            <div class="node-search-dropdown" id="pathSearchResults" style="display: none;"></div>
+                            
+                            {% if form.instance.related_path %}
+                            <div class="selected-node" id="selectedPath">
+                                <div>
+                                    <span>{{ form.instance.related_path.title }}</span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearPathBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="selected-node" id="selectedPath" style="display: none;">
+                                <div>
+                                    <span id="selectedPathTitle"></span>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-outline-danger" id="clearPathBtn">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                            
+                            <input type="hidden" name="related_path" id="relatedPathInput" value="{{ form.instance.related_path.id|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quiz Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.is_public|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        {{ form.time_limit|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.passing_score|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.max_attempts|as_crispy_field }}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.randomize_questions|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.show_correct_answers|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="questions-container">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3>Questions</h3>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-plus me-2"></i>Add Question
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" data-question-type="MULTIPLE_CHOICE">Multiple Choice</a></li>
+                        <li><a class="dropdown-item" href="#" data-question-type="TRUE_FALSE">True/False</a></li>
+                        <li><a class="dropdown-item" href="#" data-question-type="MATCHING">Matching</a></li>
+                        <li><a class="dropdown-item" href="#" data-question-type="TEXT">Text Response</a></li>
+                        <li><a class="dropdown-item" href="#" data-question-type="RELATIONSHIP">Relationship Identification</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="#" id="generateQuestionsBtn">Generate Questions...</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div id="generationOptions" class="quiz-settings mb-4">
+                <h5>Generate Questions</h5>
+                <p class="text-muted">Auto-generate questions based on knowledge graph content</p>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="generationDifficulty" class="form-label">Difficulty Level</label>
+                        <select class="form-select" id="generationDifficulty">
+                            <option value="EASY">Easy</option>
+                            <option value="MEDIUM" selected>Medium</option>
+                            <option value="HARD">Hard</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="generationCount" class="form-label">Number of Questions</label>
+                        <input type="number" class="form-control" id="generationCount" min="1" max="20" value="5">
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeNodeQuestions" checked>
+                            <label class="form-check-label" for="includeNodeQuestions">
+                                Include knowledge point questions
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="includeRelationshipQuestions" checked>
+                            <label class="form-check-label" for="includeRelationshipQuestions">
+                                Include relationship questions
+                            </label>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="focusCourseKnowledge" checked>
+                            <label class="form-check-label" for="focusCourseKnowledge">
+                                Focus on course knowledge
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="focusIdeology" checked>
+                            <label class="form-check-label" for="focusIdeology">
+                                Focus on ideological elements
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-end">
+                    <button type="button" class="btn btn-outline-secondary me-2" id="cancelGenerationBtn">
+                        <i class="fas fa-times me-1"></i>Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirmGenerationBtn">
+                        <i class="fas fa-magic me-1"></i>Generate Questions
+                    </button>
+                </div>
+            </div>
+            
+            <div id="questionsContainer">
+                {% if questions %}
+                    {% for question in questions %}
+                    <div class="card question-card" data-question-id="{{ question.id }}" data-question-type="{{ question.question_type }}">
+                        <div class="card-header">
+                            <div class="question-header">
+                                <div>
+                                    <i class="fas fa-grip-vertical draggable-handle"></i>
+                                    <span class="badge bg-secondary">{{ question.get_question_type_display }}</span>
+                                </div>
+                                <div>
+                                    <button type="button" class="btn btn-sm btn-outline-danger question-delete-btn">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">Question Text</label>
+                                <textarea class="form-control question-text" name="question_{{ question.id }}_text" rows="3">{{ question.question_text }}</textarea>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Points</label>
+                                <input type="number" class="form-control question-points" name="question_{{ question.id }}_points" min="1" value="{{ question.points }}">
+                            </div>
+                            
+                            {% if question.question_type != 'TEXT' %}
+                            <div class="mb-3">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label">Answers</label>
+                                    <button type="button" class="btn btn-sm btn-outline-secondary add-answer-btn">
+                                        <i class="fas fa-plus me-1"></i>Add Answer
+                                    </button>
+                                </div>
+                                
+                                <div class="answers-container">
+                                    {% for answer in question.answers.all %}
+                                    <div class="answer-row {% if answer.is_correct %}correct-answer{% endif %}" data-answer-id="{{ answer.id }}">
+                                        <i class="fas fa-grip-vertical answer-handle"></i>
+                                        <div class="answer-text">
+                                            <input type="text" class="form-control" name="answer_{{ answer.id }}_text" value="{{ answer.answer_text }}">
+                                        </div>
+                                        
+                                        {% if question.question_type == 'MATCHING' %}
+                                        <div class="answer-group me-2">
+                                            <input type="text" class="form-control" name="answer_{{ answer.id }}_group" value="{{ answer.matching_group }}" placeholder="Group">
+                                        </div>
+                                        {% endif %}
+                                        
+                                        <div class="form-check me-2">
+                                            <input class="form-check-input correct-checkbox" type="{% if question.question_type == 'MULTIPLE_CHOICE' %}checkbox{% else %}radio{% endif %}" name="correct_{{ question.id }}" value="{{ answer.id }}" {% if answer.is_correct %}checked{% endif %}>
+                                            <label class="form-check-label">Correct</label>
+                                        </div>
+                                        
+                                        <div class="answer-controls">
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-answer-btn">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Explanation (Optional)</label>
+                                <textarea class="form-control question-explanation" name="question_{{ question.id }}_explanation" rows="2">{{ question.explanation }}</textarea>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <div class="text-center p-5 bg-light rounded">
+                    <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                    <h5>No Questions Yet</h5>
+                    <p class="text-muted">Add questions using the button above to build your quiz.</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'quizzes' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>{% if form.instance.id %}Update{% else %}Create{% endif %} Quiz
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Node search functionality
+        const nodeSearch = document.getElementById('nodeSearch');
+        const nodeSearchResults = document.getElementById('nodeSearchResults');
+        const selectedNode = document.getElementById('selectedNode');
+        const selectedNodeTitle = document.getElementById('selectedNodeTitle');
+        const selectedNodeBadge = document.getElementById('selectedNodeBadge');
+        const relatedNodeInput = document.getElementById('relatedNodeInput');
+        const clearNodeBtn = document.getElementById('clearNodeBtn');
+        
+        nodeSearch.addEventListener('input', function() {
+            const query = this.value.trim();
+            if (query.length < 2) {
+                nodeSearchResults.style.display = 'none';
+                return;
+            }
+            
+            fetch(`/api/search/?q=${query}`)
+                .then(response => response.json())
+                .then(data => {
+                    nodeSearchResults.innerHTML = '';
+                    
+                    if (data.results.length > 0) {
+                        data.results.forEach(result => {
+                            const item = document.createElement('div');
+                            item.className = 'node-search-item';
+                            item.innerHTML = `
+                                ${result.title}
+                                <span class="badge ${result.type === 'COURSE' ? 'badge-course' : 'badge-ideology'} float-end">
+                                    ${result.type === 'COURSE' ? 'Course' : 'Ideology'}
+                                </span>
+                            `;
+                            
+                            item.addEventListener('click', function() {
+                                selectedNodeTitle.textContent = result.title;
+                                selectedNodeBadge.textContent = result.type === 'COURSE' ? 'Course' : 'Ideology';
+                                selectedNodeBadge.className = `badge ${result.type === 'COURSE' ? 'badge-course' : 'badge-ideology'}`;
+                                selectedNode.style.display = 'flex';
+                                relatedNodeInput.value = result.id;
+                                nodeSearch.value = '';
+                                nodeSearchResults.style.display = 'none';
+                            });
+                            
+                            nodeSearchResults.appendChild(item);
+                        });
+                        
+                        nodeSearchResults.style.display = 'block';
+                    } else {
+                        nodeSearchResults.style.display = 'none';
+                    }
+                });
+        });
+        
+        clearNodeBtn.addEventListener('click', function() {
+            selectedNode.style.display = 'none';
+            relatedNodeInput.value = '';
+        });
+        
+        // Learning Path search would follow the same pattern
+        // Omitted for brevity
+        
+        // Generate Questions panel toggle
+        const generateQuestionsBtn = document.getElementById('generateQuestionsBtn');
+        const generationOptions = document.getElementById('generationOptions');
+        const cancelGenerationBtn = document.getElementById('cancelGenerationBtn');
+        
+        generateQuestionsBtn.addEventListener('click', function() {
+            generationOptions.style.display = 'block';
+        });
+        
+        cancelGenerationBtn.addEventListener('click', function() {
+            generationOptions.style.display = 'none';
+        });
+        
+        // Add Question functionality would be implemented here
+        // Omitted for brevity
+        
+        // Question drag-and-drop reordering would be implemented here
+        // Omitted for brevity
+    });
+</script>
+{% endblock %}

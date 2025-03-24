@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if form.instance.id %}Edit{% else %}Create{% endif %} Knowledge Node{% endblock %}
+
+{% block custom_css %}
+.form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-header {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 15px;
+    margin-bottom: 1.5rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <div class="form-header">
+        <h1>{% if form.instance.id %}Edit{% else %}Create{% endif %} Knowledge Node</h1>
+        <p class="text-muted">
+            {% if form.instance.id %}
+                Update information for this knowledge node.
+            {% else %}
+                Add a new knowledge node to the graph.
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-md-8">
+                        {{ form.title|as_crispy_field }}
+                    </div>
+                    <div class="col-md-4">
+                        {{ form.knowledge_type|as_crispy_field }}
+                    </div>
+                </div>
+                {{ form.description|as_crispy_field }}
+                
+                <div class="d-flex justify-content-between mt-4">
+                    <a href="{% if request.META.HTTP_REFERER %}{{ request.META.HTTP_REFERER }}{% else %}{% url 'node-list' %}{% endif %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-2"></i>Cancel
+                    </a>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-2"></i>{% if form.instance.id %}Update{% else %}Create{% endif %} Node
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    {% if form.instance.id %}
+    <div class="card mt-4">
+        <div class="card-header bg-light">
+            Related Actions
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <a href="{% url 'relationship-create' %}?source={{ form.instance.id }}" class="btn btn-outline-primary w-100">
+                        <i class="fas fa-link me-2"></i>Add Relationship From This Node
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{% url 'node-detail' form.instance.id %}" class="btn btn-outline-info w-100">
+                        <i class="fas fa-eye me-2"></i>View Node Details
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

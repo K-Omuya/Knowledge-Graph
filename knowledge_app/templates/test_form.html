@@ -1,0 +1,9 @@
+<!-- Create templates/test_form.html -->
+{% extends 'base.html' %}
+{% block content %}
+<h1>Test Form</h1>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Submit Test</button>
+</form>
+{% endblock %}

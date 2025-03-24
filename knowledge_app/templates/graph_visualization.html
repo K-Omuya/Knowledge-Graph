@@ -1,0 +1,126 @@
+{% extends 'base.html' %}
+
+{% block title %}Knowledge Graph Visualization{% endblock %}
+
+{% block custom_css %}
+.graph-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-top: 1rem;
+    height: 80vh;
+    position: relative;
+    overflow: hidden;
+}
+
+.graph-controls {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 100;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.controls-heading {
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.node-legend {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+    font-size: 0.85rem;
+}
+
+.legend-color {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.course-color {
+    background-color: #3498db;
+}
+
+.ideology-color {
+    background-color: #2ecc71;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Knowledge Graph Visualization</h1>
+    <div>
+        <a href="{% url 'node-list' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-list me-2"></i>View All Nodes
+        </a>
+        <a href="{% url 'node-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Add New Node
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">About This Visualization</h5>
+        <p class="card-text">
+            This interactive visualization shows the connections between course knowledge points and ideological elements.
+            You can zoom, pan, and click on nodes to explore the relationships between different concepts.
+        </p>
+        <ul>
+            <li><strong>Blue nodes</strong> represent course knowledge points</li>
+            <li><strong>Green nodes</strong> represent ideological elements</li>
+            <li><strong>Edges</strong> represent relationships between nodes</li>
+        </ul>
+        <p class="card-text">
+            <i class="fas fa-info-circle text-primary me-2"></i>
+            Click on any node to view more details. Hover over edges to see relationship types.
+        </p>
+    </div>
+</div>
+
+<div class="graph-container" id="graph-container">
+    <div class="graph-controls">
+        <div class="controls-heading">Legend</div>
+        <div class="node-legend">
+            <div class="legend-color course-color"></div>
+            <div>Course Knowledge</div>
+        </div>
+        <div class="node-legend">
+            <div class="legend-color ideology-color"></div>
+            <div>Ideological Element</div>
+        </div>
+        <hr>
+        <button class="btn btn-sm btn-outline-secondary" id="reset-zoom">
+            <i class="fas fa-redo me-1"></i>Reset View
+        </button>
+    </div>
+    
+    <!-- The visualization will be rendered here -->
+    {{ graph_html|safe }}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Reset zoom functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const resetZoomBtn = document.getElementById('reset-zoom');
+        if (resetZoomBtn) {
+            resetZoomBtn.addEventListener('click', function() {
+                // This assumes the network is available as a global variable
+                // from the pyvis output
+                if (typeof network !== 'undefined') {
+                    network.fit();
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

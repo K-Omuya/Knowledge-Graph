@@ -1,0 +1,541 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics Dashboard - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.analytics-header {
+    background-color: #f0f7ff;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.stats-card {
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.stats-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.stats-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.bridge-node-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--warning-color);
+}
+
+.bridge-node-card:hover {
+    transform: translateY(-5px);
+}
+
+.chart-container {
+    height: 300px;
+    position: relative;
+}
+
+.node-distribution-card {
+    height: 100%;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Analytics Dashboard</h1>
+    <div class="btn-group">
+        <a href="{% url 'heatmap' %}" class="btn btn-outline-primary">
+            <i class="fas fa-th me-2"></i>Heatmap View
+        </a>
+        <a href="{% url 'metrics' %}" class="btn btn-outline-primary">
+            <i class="fas fa-chart-line me-2"></i>Detailed Metrics
+        </a>
+    </div>
+</div>
+
+<!-- Analytics Overview Header -->
+<div class="analytics-header">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Knowledge Graph Insights</h2>
+            <p class="lead">
+                Understand the structure and connections in your knowledge graph to improve learning and content organization.
+            </p>
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="fas fa-brain" style="font-size: 6rem; color: var(--primary-color); opacity: 0.7;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Key Metrics Row -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Nodes</h5>
+                        <h2 class="mb-0">{{ node_count|default:"0" }}</h2>
+                    </div>
+                    <i class="fas fa-database stats-icon text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100" style="border-left-color: var(--secondary-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Total Relationships</h5>
+                        <h2 class="mb-0">{{ relationship_count|default:"0" }}</h2>
+                    </div>
+                    <i class="fas fa-link stats-icon text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100" style="border-left-color: var(--info-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Learning Paths</h5>
+                        <h2 class="mb-0">{{ learning_path_count|default:"0" }}</h2>
+                    </div>
+                    <i class="fas fa-graduation-cap stats-icon text-info"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100" style="border-left-color: var(--danger-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Active Users</h5>
+                        <h2 class="mb-0">{{ active_user_count|default:"0" }}</h2>
+                    </div>
+                    <i class="fas fa-users stats-icon text-danger"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Graph Structure Analysis -->
+<div class="row mb-4">
+    <!-- Node Distribution -->
+    <div class="col-md-6">
+        <div class="card node-distribution-card">
+            <div class="card-header">
+                <h5 class="mb-0">Node Type Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" id="nodeDistributionChart">
+                    <canvas id="nodeTypeChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="mb-1">Course Knowledge</div>
+                        <h4 class="mb-0 text-primary">{{ course_nodes_count|default:"0" }}</h4>
+                        <small class="text-muted">{{ course_percentage|default:"0" }}% of total</small>
+                    </div>
+                    <div class="col-6">
+                        <div class="mb-1">Ideological Elements</div>
+                        <h4 class="mb-0 text-success">{{ ideology_nodes_count|default:"0" }}</h4>
+                        <small class="text-muted">{{ ideology_percentage|default:"0" }}% of total</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Relationship Types -->
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Relationship Type Distribution</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container" id="relationshipDistributionChart">
+                    <canvas id="relationshipTypeChart"></canvas>
+                </div>
+            </div>
+            <div class="card-footer bg-white">
+                <div class="row">
+                    {% for rel_count in relationship_counts %}
+                    <div class="col-3 text-center">
+                        <div class="mb-1">{{ rel_count.get_relationship_type_display }}</div>
+                        <h4 class="mb-0">{{ rel_count.count }}</h4>
+                        <small class="text-muted">{{ rel_count.percentage|default:"0" }}%</small>
+                    </div>
+                    {% empty %}
+                    <div class="col-12 text-center">
+                        <p class="text-muted mb-0">No relationship data available</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Network Metrics -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-header">
+                <h5 class="mb-0">Network Metrics</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Connectivity</strong>
+                            <div class="text-muted small">Is the graph fully connected?</div>
+                        </div>
+                        <span class="badge {% if is_connected %}bg-success{% else %}bg-warning{% endif %} rounded-pill">
+                            {% if is_connected %}Connected{% else %}Disconnected{% endif %}
+                        </span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Communities</strong>
+                            <div class="text-muted small">Distinct groups in the graph</div>
+                        </div>
+                        <span class="badge bg-primary rounded-pill">{{ communities|default:"N/A" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Isolated Nodes</strong>
+                            <div class="text-muted small">Nodes without connections</div>
+                        </div>
+                        <span class="badge bg-danger rounded-pill">{{ isolated_count|default:"0" }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>Average Connections</strong>
+                            <div class="text-muted small">Per node</div>
+                        </div>
+                        <span class="badge bg-info rounded-pill">{{ avg_connections|default:"0" }}</span>
+                    </li>
+                </ul>
+            </div>
+            <div class="card-footer bg-white">
+                <a href="{% url 'metrics' %}" class="btn btn-sm btn-outline-primary w-100">
+                    View Detailed Metrics
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bridge Nodes -->
+    <div class="col-md-8">
+        <div class="card h-100">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Key Bridge Nodes</h5>
+                <span class="badge bg-warning text-dark">
+                    <i class="fas fa-info-circle me-1"></i>Connect course & ideology
+                </span>
+            </div>
+            <div class="card-body">
+                {% if bridge_nodes %}
+                <div class="row">
+                    {% for bridge in bridge_nodes %}
+                    <div class="col-md-6 mb-3">
+                        <div class="card bridge-node-card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ bridge.node.title }}</h6>
+                                <span class="badge {% if bridge.node.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %} mb-2">
+                                    {% if bridge.node.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                                </span>
+                                <p class="card-text small text-muted">{{ bridge.node.description|truncatechars:100 }}</p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="badge bg-light text-dark">
+                                        <i class="fas fa-link me-1"></i>{{ bridge.connections|default:"0" }} connections
+                                    </span>
+                                    <small class="text-warning">
+                                        <i class="fas fa-star me-1"></i>Score: {{ bridge.score|floatformat:2 }}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-footer bg-transparent p-2">
+                                <a href="{% url 'node-detail' bridge.node.id %}" class="btn btn-sm btn-outline-primary w-100">
+                                    View Node
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    No bridge nodes identified yet. Bridge nodes are nodes with high betweenness centrality that connect different areas of your knowledge graph.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cross-Community Connections -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0">Course-Ideology Connections</h5>
+    </div>
+    <div class="card-body">
+        {% if cross_community_edges %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Course Knowledge</th>
+                            <th>Relationship</th>
+                            <th>Ideological Element</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for edge in cross_community_edges %}
+                            <tr>
+                                <td>
+                                    {% if edge.0.knowledge_type == 'COURSE' %}
+                                        <a href="{% url 'node-detail' edge.0.id %}">{{ edge.0.title }}</a>
+                                    {% else %}
+                                        <a href="{% url 'node-detail' edge.1.id %}">{{ edge.1.title }}</a>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge bg-light text-dark">
+                                        {% for rel in edge.2 %}
+                                            {{ rel.get_relationship_type_display }}
+                                            {% if not forloop.last %}, {% endif %}
+                                        {% endfor %}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if edge.0.knowledge_type == 'IDEOLOGY' %}
+                                        <a href="{% url 'node-detail' edge.0.id %}">{{ edge.0.title }}</a>
+                                    {% else %}
+                                        <a href="{% url 'node-detail' edge.1.id %}">{{ edge.1.title }}</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if cross_community_count > 10 %}
+            <div class="text-center mt-3">
+                <a href="{% url 'metrics' %}#cross-connections" class="btn btn-outline-primary">
+                    View All {{ cross_community_count }} Connections
+                </a>
+            </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No cross-community connections found. These are important links between course knowledge and ideological elements.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Isolated Nodes -->
+{% if isolated_nodes %}
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Isolated Nodes</h5>
+        <span class="badge bg-danger">{{ isolated_count }} nodes</span>
+    </div>
+    <div class="card-body">
+        <p class="text-muted">These nodes have no connections to other nodes in the knowledge graph. Consider adding relationships to integrate them.</p>
+        
+        <div class="row">
+            {% for node in isolated_nodes %}
+            <div class="col-md-4 mb-3">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h6 class="card-title">{{ node.title }}</h6>
+                        <span class="badge {% if node.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %} mb-2">
+                            {% if node.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                        </span>
+                        <p class="card-text small text-muted">{{ node.description|truncatechars:100 }}</p>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="btn-group w-100">
+                            <a href="{% url 'node-detail' node.id %}" class="btn btn-sm btn-outline-primary">
+                                View
+                            </a>
+                            <a href="{% url 'relationship-create' %}?source={{ node.id }}" class="btn btn-sm btn-outline-success">
+                                <i class="fas fa-plus me-1"></i>Add Relationship
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if isolated_count > 9 %}
+        <div class="text-center mt-3">
+            <a href="{% url 'metrics' %}#isolated" class="btn btn-outline-primary">
+                View All {{ isolated_count }} Isolated Nodes
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Recommendations -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Improvement Recommendations</h5>
+    </div>
+    <div class="card-body">
+        <div class="list-group">
+            {% if isolated_count > 0 %}
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Connect Isolated Nodes</h5>
+                    <span class="badge bg-danger">High Priority</span>
+                </div>
+                <p class="mb-1">You have {{ isolated_count }} nodes without any connections. Add relationships to integrate them into your knowledge graph.</p>
+                <a href="{% url 'metrics' %}#isolated" class="btn btn-sm btn-outline-primary mt-2">View Isolated Nodes</a>
+            </div>
+            {% endif %}
+            
+            {% if not is_connected %}
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Connect Graph Components</h5>
+                    <span class="badge bg-warning">Medium Priority</span>
+                </div>
+                <p class="mb-1">Your knowledge graph is not fully connected. Consider adding relationships between disconnected components.</p>
+            </div>
+            {% endif %}
+            
+            {% if course_percentage < 40 or ideology_percentage < 40 %}
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Balance Node Types</h5>
+                    <span class="badge bg-info">Suggestion</span>
+                </div>
+                <p class="mb-1">Your graph has an imbalance between course knowledge nodes ({{ course_percentage }}%) and ideological elements ({{ ideology_percentage }}%). Consider adding more 
+                {% if course_percentage < ideology_percentage %}course knowledge{% else %}ideological element{% endif %} nodes for better balance.</p>
+            </div>
+            {% endif %}
+            
+            {% if relationship_count < node_count %}
+            <div class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <h5 class="mb-1">Add More Relationships</h5>
+                    <span class="badge bg-info">Suggestion</span>
+                </div>
+                <p class="mb-1">You have fewer relationships ({{ relationship_count }}) than nodes ({{ node_count }}). A well-connected graph usually has more relationships than nodes.</p>
+                <a href="{% url 'relationship-suggestions' %}" class="btn btn-sm btn-outline-primary mt-2">View Suggested Relationships</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Node Type Distribution Chart
+        const nodeTypeCtx = document.getElementById('nodeTypeChart').getContext('2d');
+        const nodeTypeChart = new Chart(nodeTypeCtx, {
+            type: 'pie',
+            data: {
+                labels: ['Course Knowledge', 'Ideological Elements'],
+                datasets: [{
+                    data: [{{ course_nodes_count|default:"0" }}, {{ ideology_nodes_count|default:"0" }}],
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(46, 204, 113, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+        
+        // Relationship Type Distribution Chart
+        const relationshipTypeCtx = document.getElementById('relationshipTypeChart').getContext('2d');
+        const relationshipLabels = [
+            {% for rel in relationship_counts %}
+                "{{ rel.get_relationship_type_display }}",
+            {% endfor %}
+        ];
+        const relationshipData = [
+            {% for rel in relationship_counts %}
+                {{ rel.count|default:"0" }},
+            {% endfor %}
+        ];
+        
+        const relationshipTypeChart = new Chart(relationshipTypeCtx, {
+            type: 'bar',
+            data: {
+                labels: relationshipLabels.length > 0 ? relationshipLabels : ['No Data'],
+                datasets: [{
+                    label: 'Number of Relationships',
+                    data: relationshipData.length > 0 ? relationshipData : [0],
+                    backgroundColor: [
+                        'rgba(52, 152, 219, 0.8)',
+                        'rgba(46, 204, 113, 0.8)',
+                        'rgba(243, 156, 18, 0.8)',
+                        'rgba(231, 76, 60, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(52, 152, 219, 1)',
+                        'rgba(46, 204, 113, 1)',
+                        'rgba(243, 156, 18, 1)',
+                        'rgba(231, 76, 60, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

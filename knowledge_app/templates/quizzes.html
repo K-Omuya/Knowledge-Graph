@@ -1,0 +1,300 @@
+{% extends 'base.html' %}
+
+{% block title %}Quizzes - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.quiz-header {
+    background-color: #fff8e8;
+    padding: 2rem;
+    border-radius: 8px;
+    margin-bottom: 2rem;
+}
+
+.quiz-card {
+    border-top: 4px solid var(--warning-color);
+    transition: all 0.3s ease;
+}
+
+.quiz-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.quiz-filter {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.difficulty-badge {
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 30px;
+}
+
+.difficulty-easy {
+    background-color: #28a745;
+    color: white;
+}
+
+.difficulty-medium {
+    background-color: #ffc107;
+    color: black;
+}
+
+.difficulty-hard {
+    background-color: #dc3545;
+    color: white;
+}
+
+.quiz-type-badge {
+    font-size: 0.8rem;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+}
+
+.quiz-stats {
+    display: flex;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+}
+
+.quiz-stat {
+    margin-right: 1.5rem;
+    color: #6c757d;
+}
+
+.quiz-stat i {
+    margin-right: 0.25rem;
+}
+
+.quiz-completion {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 4px;
+    background-color: #28a745;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Knowledge Quizzes</h1>
+    <div>
+        <a href="{% url 'generate-quiz' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-magic me-2"></i>Generate Quiz
+        </a>
+        <a href="{% url 'quiz-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Create Quiz
+        </a>
+    </div>
+</div>
+
+<div class="quiz-header">
+    <div class="row align-items-center">
+        <div class="col-md-8">
+            <h2>Test Your Knowledge</h2>
+            <p class="lead mb-0">
+                Challenge yourself with quizzes that test your understanding of both course knowledge 
+                and ideological elements. Track your progress and improve your understanding.
+            </p>
+        </div>
+        <div class="col-md-4 text-center">
+            <i class="fas fa-graduation-cap" style="font-size: 6rem; color: var(--warning-color); opacity: 0.7;"></i>
+        </div>
+    </div>
+</div>
+
+<!-- Quiz Filters -->
+<div class="quiz-filter">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="type" class="form-label">Quiz Type</label>
+            <select class="form-select" id="type" name="type">
+                <option value="">All Types</option>
+                <option value="NODE" {% if request.GET.type == 'NODE' %}selected{% endif %}>Knowledge Node</option>
+                <option value="RELATIONSHIP" {% if request.GET.type == 'RELATIONSHIP' %}selected{% endif %}>Relationship</option>
+                <option value="PATH" {% if request.GET.type == 'PATH' %}selected{% endif %}>Learning Path</option>
+                <option value="CUSTOM" {% if request.GET.type == 'CUSTOM' %}selected{% endif %}>Custom</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="difficulty" class="form-label">Difficulty</label>
+            <select class="form-select" id="difficulty" name="difficulty">
+                <option value="">All Difficulties</option>
+                <option value="EASY" {% if request.GET.difficulty == 'EASY' %}selected{% endif %}>Easy</option>
+                <option value="MEDIUM" {% if request.GET.difficulty == 'MEDIUM' %}selected{% endif %}>Medium</option>
+                <option value="HARD" {% if request.GET.difficulty == 'HARD' %}selected{% endif %}>Hard</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" class="form-control" id="search" name="search" 
+                   placeholder="Search quizzes..." value="{{ request.GET.search|default:'' }}">
+        </div>
+        <div class="col-12 text-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+            {% if request.GET.type or request.GET.difficulty or request.GET.search %}
+            <a href="{% url 'quizzes' %}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-times me-2"></i>Clear Filters
+            </a>
+            {% endif %}
+        </div>
+    </form>
+</div>
+
+{% if quizzes %}
+<div class="row">
+    {% for quiz in quizzes %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 quiz-card position-relative">
+            {% if quiz.user_progress and quiz.user_progress.completion_percentage > 0 %}
+            <div class="quiz-completion" style="width: {{ quiz.user_progress.completion_percentage }}%;"></div>
+            {% endif %}
+            
+            <div class="card-body">
+                <div class="d-flex justify-content-between mb-2">
+                    <span class="quiz-type-badge bg-light text-dark">
+                        {{ quiz.get_quiz_type_display }}
+                    </span>
+                    <span class="difficulty-badge difficulty-{{ quiz.generation_params.difficulty|default:'medium'|lower }}">
+                        {{ quiz.generation_params.difficulty|default:"Medium" }}
+                    </span>
+                </div>
+                
+                <h5 class="card-title">{{ quiz.title }}</h5>
+                <p class="card-text">{{ quiz.description|truncatechars:120 }}</p>
+                
+                <div class="quiz-stats">
+                    <div class="quiz-stat">
+                        <i class="fas fa-question-circle"></i>
+                        {{ quiz.question_count }} questions
+                    </div>
+                    <div class="quiz-stat">
+                        <i class="fas fa-clock"></i>
+                        {% if quiz.time_limit %}
+                            {{ quiz.time_limit|floatformat:"0" }} sec
+                        {% else %}
+                            No time limit
+                        {% endif %}
+                    </div>
+                    <div class="quiz-stat">
+                        <i class="fas fa-tasks"></i>
+                        {{ quiz.passing_score }}% to pass
+                    </div>
+                </div>
+                
+                {% if quiz.is_auto_generated %}
+                <div class="mt-2">
+                    <span class="badge bg-info">
+                        <i class="fas fa-magic me-1"></i>Auto-generated
+                    </span>
+                </div>
+                {% endif %}
+                
+                {% if quiz.user_attempts %}
+                <div class="mt-3">
+                    <small class="text-muted">
+                        {% if quiz.best_attempt.is_passing %}
+                        <i class="fas fa-check-circle text-success me-1"></i>
+                        Best score: {{ quiz.best_attempt.score|floatformat:"0" }}%
+                        {% else %}
+                        <i class="fas fa-times-circle text-danger me-1"></i>
+                        Last attempt: {{ quiz.best_attempt.score|floatformat:"0" }}%
+                        {% endif %}
+                    </small>
+                </div>
+                {% endif %}
+            </div>
+            <div class="card-footer bg-transparent">
+                <a href="{% url 'quiz-detail' quiz.id %}" class="btn btn-outline-primary btn-sm me-2">
+                    <i class="fas fa-info-circle me-1"></i>Details
+                </a>
+                <a href="{% url 'take-quiz' quiz.id %}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-play me-1"></i>Take Quiz
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if is_paginated %}
+<nav aria-label="Page navigation" class="mt-4">
+    <ul class="pagination justify-content-center">
+        {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&laquo;&laquo;</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">&laquo;</span>
+            </li>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+            {% if page_obj.number == num %}
+                <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+            {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ num }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                </li>
+            {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.difficulty %}&difficulty={{ request.GET.difficulty }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+        {% else %}
+            <li class="page-item disabled">
+                <span class="page-link">&raquo;</span>
+            </li>
+            <li class="page-item disabled">
+                <span class="page-link">&raquo;&raquo;</span>
+            </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endif %}
+
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-question-circle mb-4" style="font-size: 5rem; color: #dee2e6;"></i>
+    <h3>No Quizzes Found</h3>
+    <p class="text-muted">There are no quizzes that match your criteria.</p>
+    <div class="mt-4">
+        <a href="{% url 'quizzes' %}" class="btn btn-outline-secondary me-2">
+            <i class="fas fa-sync-alt me-2"></i>View All Quizzes
+        </a>
+        <a href="{% url 'generate-quiz' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-magic me-2"></i>Generate a Quiz
+        </a>
+        <a href="{% url 'quiz-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Create Quiz
+        </a>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

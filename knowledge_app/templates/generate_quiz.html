@@ -1,0 +1,431 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Generate Quiz - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.quiz-generator-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.generator-header {
+    border-left: 4px solid var(--warning-color);
+    padding-left: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.topic-selector {
+    margin-bottom: 2rem;
+}
+
+.topic-card {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.topic-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.topic-card.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.topic-card .check-icon {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.topic-card.selected .check-icon {
+    display: block;
+}
+
+.topic-card.course {
+    border-left: 4px solid var(--primary-color);
+}
+
+.topic-card.ideology {
+    border-left: 4px solid var(--secondary-color);
+}
+
+.difficulty-selector {
+    margin-bottom: 2rem;
+}
+
+.difficulty-option {
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.difficulty-option:hover {
+    transform: translateY(-3px);
+}
+
+.difficulty-option.selected {
+    border-color: var(--primary-color);
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.difficulty-option .check-icon {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+}
+
+.difficulty-option.selected .check-icon {
+    display: block;
+}
+
+.difficulty-easy {
+    border-left: 4px solid #28a745;
+}
+
+.difficulty-medium {
+    border-left: 4px solid #ffc107;
+}
+
+.difficulty-hard {
+    border-left: 4px solid #dc3545;
+}
+
+.quiz-options {
+    margin-bottom: 2rem;
+}
+
+.quiz-preview {
+    border-top: 1px solid #dee2e6;
+    padding-top: 2rem;
+    margin-top: 2rem;
+}
+
+.preview-question {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.preview-question-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.preview-answer {
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.preview-answer:hover {
+    background-color: #e9ecef;
+}
+
+.preview-answer.correct {
+    background-color: rgba(40, 167, 69, 0.1);
+    border-color: #28a745;
+}
+{% endblock %}
+
+{% block content %}
+<div class="quiz-generator-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="generator-header">
+            <h1>Generate Quiz</h1>
+            <p class="text-muted">Create a customized quiz based on the knowledge graph</p>
+        </div>
+        <a href="{% url 'quizzes' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Quizzes
+        </a>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quiz Content</h5>
+            </div>
+            <div class="card-body">
+                <div class="topic-selector">
+                    <label class="form-label">Select Topics</label>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="card topic-card course" data-topic="data-analysis">
+                                <div class="card-body">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <h5 class="card-title">Data Analysis</h5>
+                                    <span class="badge badge-course">Course</span>
+                                    <p class="card-text mt-2 small text-muted">Questions about data processing, statistical analysis, and interpretation techniques.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card topic-card course" data-topic="data-visualization">
+                                <div class="card-body">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <h5 class="card-title">Data Visualization</h5>
+                                    <span class="badge badge-course">Course</span>
+                                    <p class="card-text mt-2 small text-muted">Questions about representing data graphically and creating meaningful visualizations.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card topic-card ideology" data-topic="data-ethics">
+                                <div class="card-body">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <h5 class="card-title">Data Ethics</h5>
+                                    <span class="badge badge-ideology">Ideology</span>
+                                    <p class="card-text mt-2 small text-muted">Questions about ethical considerations in data collection, analysis, and application.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="card topic-card ideology" data-topic="social-responsibility">
+                                <div class="card-body">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <h5 class="card-title">Social Responsibility</h5>
+                                    <span class="badge badge-ideology">Ideology</span>
+                                    <p class="card-text mt-2 small text-muted">Questions about the social impact and responsibilities of data professionals.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-2">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="selectAllTopics">Select All</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" id="clearTopics">Clear Selection</button>
+                    </div>
+                    
+                    <input type="hidden" name="selected_topics" id="selectedTopicsInput">
+                </div>
+                
+                <div class="difficulty-selector mt-4">
+                    <label class="form-label">Quiz Difficulty</label>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card difficulty-option difficulty-easy" data-difficulty="EASY">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <i class="fas fa-star fa-2x mb-3 text-success"></i>
+                                    <h5 class="card-title">Easy</h5>
+                                    <p class="card-text small text-muted">Basic knowledge and simple questions.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card difficulty-option difficulty-medium selected" data-difficulty="MEDIUM">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <i class="fas fa-star fa-2x mb-3 text-warning"></i><i class="fas fa-star fa-2x mb-3 text-warning"></i>
+                                    <h5 class="card-title">Medium</h5>
+                                    <p class="card-text small text-muted">Moderate complexity and application of concepts.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card difficulty-option difficulty-hard" data-difficulty="HARD">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-check-circle check-icon"></i>
+                                    <i class="fas fa-star fa-2x mb-3 text-danger"></i><i class="fas fa-star fa-2x mb-3 text-danger"></i><i class="fas fa-star fa-2x mb-3 text-danger"></i>
+                                    <h5 class="card-title">Hard</h5>
+                                    <p class="card-text small text-muted">Advanced understanding and critical thinking.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" name="difficulty" id="difficultyInput" value="MEDIUM">
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Quiz Settings</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="quizTitle" class="form-label">Quiz Title</label>
+                            <input type="text" class="form-control" id="quizTitle" name="title" placeholder="Enter quiz title" value="Generated Quiz">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="questionCount" class="form-label">Number of Questions</label>
+                            <select class="form-select" id="questionCount" name="question_count">
+                                <option value="5">5 questions</option>
+                                <option value="10" selected>10 questions</option>
+                                <option value="15">15 questions</option>
+                                <option value="20">20 questions</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="passingScore" class="form-label">Passing Score (%)</label>
+                            <input type="number" class="form-control" id="passingScore" name="passing_score" min="1" max="100" value="70">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="timeLimit" class="form-label">Time Limit (minutes, 0 for no limit)</label>
+                            <input type="number" class="form-control" id="timeLimit" name="time_limit" min="0" value="15">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="quiz-options">
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="includeNodeQuestions" name="include_node_questions" checked>
+                        <label class="form-check-label" for="includeNodeQuestions">
+                            Include questions about individual nodes
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="includeRelationshipQuestions" name="include_relationship_questions" checked>
+                        <label class="form-check-label" for="includeRelationshipQuestions">
+                            Include questions about relationships between nodes
+                        </label>
+                    </div>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="randomizeQuestions" name="randomize_questions" checked>
+                        <label class="form-check-label" for="randomizeQuestions">
+                            Randomize question order
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="showCorrectAnswers" name="show_correct_answers" checked>
+                        <label class="form-check-label" for="showCorrectAnswers">
+                            Show correct answers after completion
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="quiz-preview">
+            <h3>Quiz Preview</h3>
+            <p class="text-muted">Here's a sample of what your generated quiz might look like:</p>
+            
+            <div class="preview-question">
+                <div class="preview-question-header">
+                    <h5>What is the primary purpose of data visualization?</h5>
+                    <span class="badge badge-course">Course</span>
+                </div>
+                <div class="preview-answers">
+                    <div class="preview-answer">A) To hide complex data patterns</div>
+                    <div class="preview-answer correct">B) To communicate information clearly and efficiently</div>
+                    <div class="preview-answer">C) To confuse viewers with colors and shapes</div>
+                    <div class="preview-answer">D) To replace traditional data analysis</div>
+                </div>
+            </div>
+            
+            <div class="preview-question">
+                <div class="preview-question-header">
+                    <h5>How does data privacy relate to ethical data stewardship?</h5>
+                    <span class="badge badge-ideology">Ideology</span>
+                </div>
+                <div class="preview-answers">
+                    <div class="preview-answer">A) They are unrelated concepts</div>
+                    <div class="preview-answer">B) Data privacy is only important for financial data</div>
+                    <div class="preview-answer correct">C) Data privacy is a fundamental component of ethical data stewardship</div>
+                    <div class="preview-answer">D) Ethical stewardship requires sharing all data openly</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'quizzes' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-magic me-2"></i>Generate Quiz
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Topic selection
+        const topicCards = document.querySelectorAll('.topic-card');
+        const selectedTopicsInput = document.getElementById('selectedTopicsInput');
+        const selectAllButton = document.getElementById('selectAllTopics');
+        const clearTopicsButton = document.getElementById('clearTopics');
+        
+        // Initialize with all topics selected
+        const selectedTopics = [];
+        topicCards.forEach(card => {
+            card.classList.add('selected');
+            selectedTopics.push(card.dataset.topic);
+        });
+        selectedTopicsInput.value = selectedTopics.join(',');
+        
+        topicCards.forEach(card => {
+            card.addEventListener('click', function() {
+                this.classList.toggle('selected');
+                updateSelectedTopics();
+            });
+        });
+        
+        selectAllButton.addEventListener('click', function() {
+            topicCards.forEach(card => {
+                card.classList.add('selected');
+            });
+            updateSelectedTopics();
+        });
+        
+        clearTopicsButton.addEventListener('click', function() {
+            topicCards.forEach(card => {
+                card.classList.remove('selected');
+            });
+            updateSelectedTopics();
+        });
+        
+        function updateSelectedTopics() {
+            const selected = [];
+            topicCards.forEach(card => {
+                if (card.classList.contains('selected')) {
+                    selected.push(card.dataset.topic);
+                }
+            });
+            selectedTopicsInput.value = selected.join(',');
+        }
+        
+        // Difficulty selection
+        const difficultyOptions = document.querySelectorAll('.difficulty-option');
+        const difficultyInput = document.getElementById('difficultyInput');
+        
+        difficultyOptions.forEach(option => {
+            option.addEventListener('click', function() {
+                difficultyOptions.forEach(opt => opt.classList.remove('selected'));
+                this.classList.add('selected');
+                difficultyInput.value = this.dataset.difficulty;
+            });
+        });
+    });
+</script>
+{% endblock %}

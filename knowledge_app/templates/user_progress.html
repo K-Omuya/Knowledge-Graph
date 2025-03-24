@@ -1,0 +1,409 @@
+
+{% extends 'base.html' %}
+
+{% block title %}My Learning Progress - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.progress-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.progress-header {
+    background-color: #f0f7ff;
+    border-radius: 8px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.progress-stats {
+    margin-bottom: 1.5rem;
+}
+
+.stats-item {
+    text-align: center;
+    background-color: white;
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.stats-number {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+.stats-label {
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.path-card {
+    border-left: 4px solid var(--secondary-color);
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.path-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.quiz-card {
+    border-left: 4px solid var(--warning-color);
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.status-badge {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 30px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    margin-bottom: 1.5rem;
+    border-bottom: 1px solid #dee2e6;
+    padding-bottom: 0.5rem;
+}
+
+.filter-options {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="progress-container">
+    <div class="progress-header">
+        <h1>My Learning Progress</h1>
+        <p class="lead">Track your journey through learning paths and quizzes</p>
+        
+        <div class="progress-stats mt-4">
+            <div class="row">
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="stats-item">
+                        <span class="stats-number">{{ stats.total_paths|default:"0" }}</span>
+                        <span class="stats-label">Learning Paths</span>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="stats-item">
+                        <span class="stats-number">{{ stats.completed_paths|default:"0" }}</span>
+                        <span class="stats-label">Completed Paths</span>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3 mb-md-0">
+                    <div class="stats-item">
+                        <span class="stats-number">{{ stats.total_quizzes|default:"0" }}</span>
+                        <span class="stats-label">Quizzes Taken</span>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="stats-item">
+                        <span class="stats-number">{{ stats.average_score|default:"0" }}%</span>
+                        <span class="stats-label">Average Quiz Score</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Learning Paths Section -->
+    <div class="section-title d-flex justify-content-between align-items-center">
+        <h2>Learning Paths</h2>
+        <a href="{% url 'learning-paths' %}" class="btn btn-outline-primary">
+            <i class="fas fa-plus-circle me-2"></i>Browse More Paths
+        </a>
+    </div>
+    
+    <!-- Filter Options -->
+    <div class="filter-options">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="COMPLETED" {% if request.GET.status == 'COMPLETED' %}selected{% endif %}>Completed</option>
+                    <option value="IN_PROGRESS" {% if request.GET.status == 'IN_PROGRESS' %}selected{% endif %}>In Progress</option>
+                    <option value="NOT_STARTED" {% if request.GET.status == 'NOT_STARTED' %}selected{% endif %}>Not Started</option>
+                </select>
+            </div>
+            <div class="col-md-6">
+                <label for="search" class="form-label">Search</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       placeholder="Search learning paths..." value="{{ request.GET.search|default:'' }}">
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-2"></i>Apply
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    {% if learning_progress %}
+        <div class="row">
+            {% for progress in learning_progress %}
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 path-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title mb-0">{{ progress.path.title }}</h5>
+                            <span class="status-badge {% if progress.status == 'COMPLETED' %}bg-success{% elif progress.status == 'IN_PROGRESS' %}bg-primary{% else %}bg-secondary{% endif %}">
+                                {{ progress.get_status_display }}
+                            </span>
+                        </div>
+                        
+                        <p class="card-text text-muted">{{ progress.path.description|truncatechars:120 }}</p>
+                        
+                        <div class="mb-3">
+                            <small class="text-muted d-block mb-1">Progress</small>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: {{ progress.completion_percentage }}%"></div>
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <small>{{ progress.completion_percentage|floatformat:0 }}% complete</small>
+                                {% if progress.completed_steps %}
+                                <small>{{ progress.completed_steps }} / {{ progress.path.node_count }} steps</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between text-muted small">
+                            <span><i class="fas fa-calendar-alt me-1"></i> Started: {{ progress.started_at|date:"M d, Y" }}</span>
+                            {% if progress.completed_at %}
+                            <span class="text-success"><i class="fas fa-check-circle me-1"></i> Completed: {{ progress.completed_at|date:"M d, Y" }}</span>
+                            {% elif progress.last_activity %}
+                            <span><i class="fas fa-clock me-1"></i> Last activity: {{ progress.last_activity|date:"M d, Y" }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-grid">
+                            <a href="{% url 'learning-path-detail' progress.path.id %}" class="btn btn-primary">
+                                {% if progress.status == 'COMPLETED' %}
+                                    Review Path
+                                {% elif progress.status == 'IN_PROGRESS' %}
+                                    Continue Learning
+                                {% else %}
+                                    Start Learning
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;&laquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-road"></i>
+            <h3>No Learning Paths Found</h3>
+            <p class="text-muted">You haven't started any learning paths yet.</p>
+            <div class="mt-4">
+                <a href="{% url 'learning-paths' %}" class="btn btn-primary">
+                    <i class="fas fa-graduation-cap me-2"></i>Browse Learning Paths
+                </a>
+            </div>
+        </div>
+    {% endif %}
+    
+    <!-- Quiz Results Section -->
+    <div class="section-title d-flex justify-content-between align-items-center mt-5">
+        <h2>Quiz Results</h2>
+        <a href="{% url 'quizzes' %}" class="btn btn-outline-primary">
+            <i class="fas fa-plus-circle me-2"></i>Take More Quizzes
+        </a>
+    </div>
+    
+    {% if quiz_attempts %}
+        <div class="row">
+            {% for attempt in quiz_attempts %}
+            <div class="col-lg-6 mb-4">
+                <div class="card h-100 path-card quiz-card">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <h5 class="card-title mb-0">{{ attempt.quiz.title }}</h5>
+                            <span class="status-badge {% if attempt.status == 'COMPLETED' %}{% if attempt.is_passing %}bg-success{% else %}bg-danger{% endif %}{% else %}bg-secondary{% endif %}">
+                                {% if attempt.status == 'COMPLETED' %}
+                                    {% if attempt.is_passing %}Passed{% else %}Failed{% endif %}
+                                {% else %}
+                                    {{ attempt.get_status_display }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        {% if attempt.status == 'COMPLETED' %}
+                            <div class="row mb-3">
+                                <div class="col-6 text-center border-end">
+                                    <h2 class="mb-0">{{ attempt.score|floatformat:0 }}%</h2>
+                                    <small class="text-muted">Score</small>
+                                </div>
+                                <div class="col-6 text-center">
+                                    <h2 class="mb-0">{{ attempt.correct_answers|default:0 }}/{{ attempt.total_questions }}</h2>
+                                    <small class="text-muted">Correct Answers</small>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3 pb-3 border-bottom">
+                                <div class="d-flex justify-content-between text-muted small">
+                                    <span><i class="fas fa-clock me-1"></i> Time taken: {{ attempt.time_taken|default:"--" }} sec</span>
+                                    <span><i class="fas fa-calendar-alt me-1"></i> {{ attempt.completed_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                            
+                            {% if attempt.quiz.passing_score %}
+                            <div class="text-center">
+                                <small class="text-muted">Passing score: {{ attempt.quiz.passing_score }}%</small>
+                                <div class="progress mb-2">
+                                    <div class="progress-bar {% if attempt.is_passing %}bg-success{% else %}bg-danger{% endif %}" 
+                                         role="progressbar" style="width: {{ attempt.score }}%"></div>
+                                    <div class="progress-bar bg-secondary opacity-25" 
+                                         role="progressbar" style="width: {{ attempt.quiz.passing_score }}%"></div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        {% else %}
+                            <p class="card-text text-muted">{{ attempt.quiz.description|truncatechars:100 }}</p>
+                            
+                            {% if attempt.status == 'IN_PROGRESS' %}
+                                <div class="mb-3">
+                                    <small class="text-muted d-block mb-1">Progress</small>
+                                    <div class="progress mb-2">
+                                        <div class="progress-bar bg-primary" role="progressbar" 
+                                             style="width: {{ attempt.progress_percentage|default:0 }}%"></div>
+                                    </div>
+                                    <small>{{ attempt.answered_questions|default:0 }} / {{ attempt.total_questions|default:0 }} questions answered</small>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="d-flex justify-content-between text-muted small">
+                                <span><i class="fas fa-calendar-alt me-1"></i> Started: {{ attempt.started_at|date:"M d, Y" }}</span>
+                                <span><i class="fas fa-clock me-1"></i> {{ attempt.time_elapsed|default:"--" }} elapsed</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <div class="d-grid">
+                            {% if attempt.status == 'COMPLETED' %}
+                                <a href="{% url 'quiz-results' attempt.quiz.id attempt.id %}" class="btn btn-outline-primary">
+                                    View Detailed Results
+                                </a>
+                            {% elif attempt.status == 'IN_PROGRESS' %}
+                                <a href="{% url 'quiz-attempt' attempt.quiz.id attempt.id %}" class="btn btn-primary">
+                                    Continue Quiz
+                                </a>
+                            {% else %}
+                                <a href="{% url 'take-quiz' attempt.quiz.id %}" class="btn btn-primary">
+                                    Restart Quiz
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        {% if quiz_attempts.has_more %}
+            <div class="text-center mt-2 mb-5">
+                <a href="{% url 'quiz-history' %}" class="btn btn-outline-secondary">
+                    View All Quiz Attempts
+                </a>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="empty-state">
+            <i class="fas fa-clipboard-check"></i>
+            <h3>No Quiz Attempts Found</h3>
+            <p class="text-muted">You haven't taken any quizzes yet.</p>
+            <div class="mt-4">
+                <a href="{% url 'quizzes' %}" class="btn btn-primary">
+                    <i class="fas fa-check-circle me-2"></i>Browse Available Quizzes
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

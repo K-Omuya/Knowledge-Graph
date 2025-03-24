@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Profile - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.profile-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.form-header {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.profile-picture-container {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.current-picture {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.picture-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #e9ecef;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: #adb5bd;
+    border: 4px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1rem;
+}
+
+.file-upload {
+    position: relative;
+    overflow: hidden;
+    margin: 10px;
+    width: 150px;
+}
+
+.file-upload input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    margin: 0;
+    padding: 0;
+    font-size: 20px;
+    cursor: pointer;
+    opacity: 0;
+    filter: alpha(opacity=0);
+}
+
+.security-section {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #dee2e6;
+}
+{% endblock %}
+
+{% block content %}
+<div class="profile-form-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div class="form-header">
+            <h1>Edit Profile</h1>
+            <p class="text-muted">Update your personal information and preferences</p>
+        </div>
+        <a href="{% url 'user-profile' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Profile
+        </a>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Profile Picture</h5>
+            </div>
+            <div class="card-body">
+                <div class="profile-picture-container">
+                    {% if profile.profile_picture %}
+                        <img src="{{ profile.profile_picture.url }}" alt="{{ user.username }}" class="current-picture">
+                    {% else %}
+                        <div class="picture-placeholder">
+                            <i class="fas fa-user"></i>
+                        </div>
+                    {% endif %}
+                    
+                    <div class="d-flex justify-content-center">
+                        <div class="file-upload btn btn-outline-primary">
+                            <i class="fas fa-upload me-2"></i>Upload Photo
+                            {{ form.profile_picture }}
+                        </div>
+                        
+                        {% if profile.profile_picture %}
+                        <button type="button" class="btn btn-outline-danger ms-2" data-bs-toggle="modal" data-bs-target="#removePhotoModal">
+                            <i class="fas fa-trash-alt me-2"></i>Remove
+                        </button>
+                        {% endif %}
+                    </div>
+                    
+                    {% if form.profile_picture.errors %}
+                    <div class="text-danger mt-2">
+                        {{ form.profile_picture.errors }}
+                    </div>
+                    {% endif %}
+                    
+                    <small class="text-muted d-block mt-2">Recommended: Square image, at least 300x300 pixels</small>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Personal Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ user_form.first_name|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ user_form.last_name|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3"><div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ user_form.email|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ user_form.username|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        {{ form.bio|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Academic Information</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form.institution|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.department|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        {{ form.position|as_crispy_field }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="security-section">
+            <h3>Password and Security</h3>
+            <p class="text-muted">Manage your account security settings</p>
+            
+            <div class="d-grid gap-3 d-md-block">
+                <a href="{% url 'password_change' %}" class="btn btn-outline-primary me-md-2">
+                    <i class="fas fa-key me-2"></i>Change Password
+                </a>
+                <a href="{% url 'password_reset' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-lock me-2"></i>Reset Password
+                </a>
+            </div>
+        </div>
+        
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'user-profile' %}" class="btn btn-outline-secondary">
+                <i class="fas fa-times me-2"></i>Cancel
+            </a>
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-2"></i>Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Remove Photo Modal -->
+<div class="modal fade" id="removePhotoModal" tabindex="-1" aria-labelledby="removePhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="removePhotoModalLabel">Remove Profile Picture</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to remove your profile picture? This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form method="post" action="{% url 'remove-profile-picture' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">Remove Picture</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Display filename when a file is selected
+        const fileInput = document.getElementById('id_profile_picture');
+        if (fileInput) {
+            fileInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const fileName = this.files[0].name;
+                    // Create preview of the image
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const previewElement = document.querySelector('.current-picture') || document.querySelector('.picture-placeholder');
+                        
+                        if (previewElement.tagName === 'IMG') {
+                            previewElement.src = e.target.result;
+                        } else {
+                            // Replace placeholder with image
+                            const img = document.createElement('img');
+                            img.src = e.target.result;
+                            img.className = 'current-picture';
+                            img.alt = 'Profile Preview';
+                            previewElement.parentNode.replaceChild(img, previewElement);
+                        }
+                    }
+                    reader.readAsDataURL(this.files[0]);
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

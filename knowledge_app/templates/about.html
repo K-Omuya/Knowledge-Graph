@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+
+{% block title %}About - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.about-header {
+    background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+    color: white;
+    padding: 3rem 0;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.about-section {
+    margin-bottom: 3rem;
+}
+
+.team-member {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.team-member img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 1rem;
+    border: 4px solid white;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.timeline {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.timeline::after {
+    content: '';
+    position: absolute;
+    width: 6px;
+    background-color: #e9ecef;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    margin-left: -3px;
+}
+
+.timeline-container {
+    padding: 10px 40px;
+    position: relative;
+    background-color: inherit;
+    width: 50%;
+}
+
+.timeline-container::after {
+    content: '';
+    position: absolute;
+    width: 25px;
+    height: 25px;
+    right: -13px;
+    background-color: white;
+    border: 4px solid var(--primary-color);
+    top: 15px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.left {
+    left: 0;
+}
+
+.right {
+    left: 50%;
+}
+
+.left::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 22px;
+    width: 0;
+    z-index: 1;
+    right: 30px;
+    border: medium solid #f8f9fa;
+    border-width: 10px 0 10px 10px;
+    border-color: transparent transparent transparent #f8f9fa;
+}
+
+.right::before {
+    content: " ";
+    height: 0;
+    position: absolute;
+    top: 22px;
+    width: 0;
+    z-index: 1;
+    left: 30px;
+    border: medium solid #f8f9fa;
+    border-width: 10px 10px 10px 0;
+    border-color: transparent #f8f9fa transparent transparent;
+}
+
+.right::after {
+    left: -13px;
+}
+
+.timeline-content {
+    padding: 20px 30px;
+    background-color: #f8f9fa;
+    position: relative;
+    border-radius: 6px;
+}
+
+@media screen and (max-width: 768px) {
+    .timeline::after {
+        left: 31px;
+    }
+    
+    .timeline-container {
+        width: 100%;
+        padding-left: 70px;
+        padding-right: 25px;
+    }
+    
+    .timeline-container::before {
+        left: 60px;
+        border: medium solid #f8f9fa;
+        border-width: 10px 10px 10px 0;
+        border-color: transparent #f8f9fa transparent transparent;
+    }
+
+    .left::after, .right::after {
+        left: 18px;
+    }
+    
+    .right {
+        left: 0%;
+    }
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+    transition: transform 0.3s ease;
+}
+
+.feature-card:hover .feature-icon {
+    transform: scale(1.2);
+}
+{% endblock %}
+
+{% block content %}
+<div class="about-header">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4">About Our Knowledge Graph System</h1>
+                <p class="lead">
+                    Bridging the gap between technical knowledge and ideological education
+                    through interactive visualization and collaborative learning.
+                </p>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <i class="fas fa-project-diagram" style="font-size: 10rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Mission Section -->
+    <div class="about-section">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h2>Our Mission</h2>
+                <p>
+                    The Knowledge Graph for Course Ideological & Political Education is designed to 
+                    bridge the gap between technical courses and ideological education. By visualizing 
+                    the connections between course knowledge points and ideological elements, this 
+                    system helps both teachers and students understand how professional skills and 
+                    values education can be integrated.
+                </p>
+                <p>
+                    We believe that education should nurture not only technical competence but also 
+                    ethical awareness, social responsibility, and critical thinking. Our platform 
+                    offers an innovative approach to curriculum design and learning, promoting the 
+                    development of both technical proficiency and social responsibility among students.
+                </p>
+            </div>
+            <div class="col-md-6">
+                <img src="/static/images/mission.jpg" alt="Our Mission" class="img-fluid rounded shadow">
+            </div>
+        </div>
+    </div>
+    
+    <!-- What Makes Us Different -->
+    <div class="about-section">
+        <h2 class="text-center mb-4">What Makes Us Different</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-project-diagram"></i>
+                        </div>
+                        <h4>Interactive Visualization</h4>
+                        <p>
+                            Our system provides intuitive graph visualizations that make complex knowledge 
+                            relationships easy to understand and navigate.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <h4>Collaborative Learning</h4>
+                        <p>
+                            Students and educators can collaboratively build and expand the knowledge graph, 
+                            contributing insights and making connections.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 feature-card">
+                    <div class="card-body text-center">
+                        <div class="feature-icon">
+                            <i class="fas fa-brain"></i>
+                        </div>
+                        <h4>AI-Powered Analysis</h4>
+                        <p>
+                            Our system uses natural language processing and machine learning to suggest 
+                            relationships and analyze knowledge structures.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Our History -->
+    <div class="about-section">
+        <h2 class="text-center mb-5">Our Journey</h2>
+        <div class="timeline">
+            <div class="timeline-container left">
+                <div class="timeline-content">
+                    <h3>2023</h3>
+                    <p>Initial concept development and research on knowledge graph applications in education.</p>
+                </div>
+            </div>
+            <div class="timeline-container right">
+                <div class="timeline-content">
+                    <h3>January 2024</h3>
+                    <p>Development of core database structure and knowledge modeling framework.</p>
+                </div>
+            </div>
+            <div class="timeline-container left">
+                <div class="timeline-content">
+                    <h3>March 2024</h3>
+                    <p>Launch of first prototype with basic visualization capabilities.</p>
+                </div>
+            </div>
+            <div class="timeline-container right">
+                <div class="timeline-content">
+                    <h3>June 2024</h3>
+                    <p>Integration of collaborative features and user management system.</p>
+                </div>
+            </div>
+            <div class="timeline-container left">
+                <div class="timeline-content">
+                    <h3>September 2024</h3>
+                    <p>Addition of learning paths and assessment capabilities.</p>
+                </div>
+            </div>
+            <div class="timeline-container right">
+                <div class="timeline-content">
+                    <h3>March 2025</h3>
+                    <p>Launch of full platform with advanced features and mobile optimization.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Technology Stack -->
+    <div class="about-section">
+        <h2 class="text-center mb-4">Our Technology Stack</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row text-center">
+                            <div class="col-4 col-md-2 mb-3">
+                                <i class="fab fa-python fa-3x text-primary"></i>
+                                <p>Python</p>
+                            </div>
+                            <div class="col-4 col-md-2 mb-3">
+                                <i class="fab fa-js-square fa-3x text-warning"></i>
+                                <p>JavaScript</p>
+                            </div>
+                            <div class="col-4 col-md-2 mb-3">
+                                <i class="fab fa-html5 fa-3x text-danger"></i>
+                                <p>HTML5</p>
+                            </div>
+                            <div class="col-4 col-md-2 mb-3">
+                                <i class="fab fa-css3-alt fa-3x text-info"></i>
+                                <p>CSS3</p>
+                            </div>
+                            <div class="col-4 col-md-2 mb-3">
+                                <i class="fas fa-database fa-3x text-success"></i>
+                                <p>Neo4j</p>
+                            </div>
+                            <div class="col-4 col-md-2 mb-3">
+                                <i class="fab fa-bootstrap fa-3x text-purple"></i>
+                                <p>Bootstrap</p>
+                            </div>
+                        </div>
+                        <hr>
+                        <p class="text-center mb-0">
+                            Our system is built on Django, using Neo4j graph database for knowledge storage, 
+                            and incorporates natural language processing for content analysis.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Our Team -->
+    <div class="about-section">
+        <h2 class="text-center mb-4">Our Team</h2>
+        <div class="row">
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="/static/images/placeholder_profile.jpg" alt="Team Member">
+                <h4>Dr. Jane Smith</h4>
+                <p class="text-muted">Project Lead</p>
+            </div>
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="/static/images/placeholder_profile.jpg" alt="Team Member">
+                <h4>John Johnson</h4>
+                <p class="text-muted">Lead Developer</p>
+            </div>
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="/static/images/placeholder_profile.jpg" alt="Team Member">
+                <h4>Maria Garcia</h4>
+                <p class="text-muted">Education Specialist</p>
+            </div>
+            <div class="col-md-3 col-sm-6 team-member">
+                <img src="/static/images/placeholder_profile.jpg" alt="Team Member">
+                <h4>David Chen</h4>
+                <p class="text-muted">UI/UX Designer</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Get In Touch -->
+    <div class="about-section">
+        <div class="card text-center">
+            <div class="card-body py-5">
+                <h2>Want to Learn More?</h2>
+                <p class="lead">
+                    We're always looking to improve our platform and collaborate with educators.
+                </p>
+                <a href="{% url 'contact' %}" class="btn btn-primary btn-lg mt-3">
+                    <i class="fas fa-envelope me-2"></i>Get in Touch
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

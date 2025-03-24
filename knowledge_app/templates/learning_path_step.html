@@ -1,0 +1,149 @@
+{% extends 'base.html' %}
+
+{% block title %}Learning Step{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Navigation -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center">
+                <a href="{% url 'learning-path-detail' path.id %}" class="text-decoration-none">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Path
+                </a>
+                <span>Step {{ step.order|default:1 }} of {{ path.steps.count|default:1 }}</span>
+            </div>
+            
+            <!-- Progress Bar -->
+            <div class="progress mt-3">
+                <div class="progress-bar bg-success" role="progressbar" 
+                     style="width: {{ current_progress|default:0 }}%"></div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Step Title -->
+    <h1 class="mb-4">{{ step.get_title|default:"Learning Step" }}</h1>
+    
+    <!-- Node Content -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="badge {% if step.node.knowledge_type == 'COURSE' %}bg-primary{% else %}bg-success{% endif %}">
+                {% if step.node.knowledge_type == 'COURSE' %}Course Knowledge{% else %}Ideological Element{% endif %}
+            </span>
+            
+            <a href="{% url 'node-detail' step.node.id %}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-external-link-alt me-1"></i>View Node
+            </a>
+        </div>
+        <div class="card-body">
+            <h2>{{ step.node.title|default:"Knowledge Node" }}</h2>
+            
+            <div class="node-description mt-3">
+                {{ step.node.description|default:"No description available."|safe }}
+            </div>
+            
+            {% if step.custom_content %}
+            <div class="mt-4 p-3 bg-light rounded">
+                <h5>Additional Context</h5>
+                {{ step.custom_content|safe }}
+            </div>
+            {% endif %}
+            
+            {% if step.node.attachments.all %}
+            <div class="mt-4">
+                <h5>Attachments</h5>
+                <ul class="list-group">
+                    {% for attachment in step.node.attachments.all %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <i class="fas fa-file me-2"></i>
+                            <a href="{{ attachment.file.url }}" target="_blank">{{ attachment.title }}</a>
+                        </div>
+                        <span class="badge bg-secondary">{{ attachment.file_type }}</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <!-- Related Nodes -->
+    {% if related_nodes %}
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">Related Concepts</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for node in related_nodes %}
+                <div class="col-md-6 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="badge {% if node.knowledge_type == 'COURSE' %}bg-primary{% else %}bg-success{% endif %} float-end">
+                                {% if node.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                            </div>
+                            <h5 class="card-title">{{ node.title }}</h5>
+                            <p class="card-text small text-muted">{{ node.description|truncatechars:100 }}</p>
+                            <a href="{% url 'node-detail' node.id %}" class="btn btn-sm btn-outline-primary">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- Completion Card -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <h5 class="card-title">Mark Your Progress</h5>
+            <p>Have you completed this learning step?</p>
+            
+            <form method="post" action="{% url 'complete-step' path.id step.id %}">
+                {% csrf_token %}
+                {% if step.is_completed %}
+                    <p class="text-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        You've completed this step
+                    </p>
+                    <button type="submit" name="mark_incomplete" class="btn btn-outline-secondary">
+                        <i class="fas fa-times me-2"></i>Mark as Incomplete
+                    </button>
+                {% else %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check me-2"></i>Mark as Complete
+                    </button>
+                {% endif %}
+            </form>
+        </div>
+    </div>
+    
+    <!-- Step Navigation -->
+    <div class="d-flex justify-content-between mb-5">
+        {% if previous_step %}
+        <a href="{% url 'learning-path-step' path.id previous_step.id %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Previous Step
+        </a>
+        {% else %}
+        <a href="{% url 'learning-path-detail' path.id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Path
+        </a>
+        {% endif %}
+        
+        {% if next_step %}
+        <a href="{% url 'learning-path-step' path.id next_step.id %}" class="btn btn-primary">
+            Next Step<i class="fas fa-arrow-right ms-2"></i>
+        </a>
+        {% else %}
+        <a href="{% url 'learning-path-detail' path.id %}" class="btn btn-success">
+            <i class="fas fa-check-circle me-2"></i>Complete Path
+        </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

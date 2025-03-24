@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+
+{% block title %}Relationship Suggestions - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.suggestion-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid var(--warning-color);
+}
+
+.suggestion-card:hover {
+    transform: translateY(-5px);
+}
+
+.similarity-badge {
+    font-size: 0.75rem;
+    padding: 0.3rem 0.5rem;
+    border-radius: 4px;
+}
+
+.similarity-high {
+    background-color: #28a745;
+    color: white;
+}
+
+.similarity-medium {
+    background-color: #ffc107;
+    color: black;
+}
+
+.similarity-low {
+    background-color: #6c757d;
+    color: white;
+}
+
+.filter-panel {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.suggestion-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.suggestion-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+    color: var(--warning-color);
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+
+.batch-actions {
+    margin-bottom: 1rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Relationship Suggestions</h1>
+    <a href="{% url 'relationship-create' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-2"></i>Create Relationship
+    </a>
+</div>
+
+<div class="suggestion-header">
+    <div class="suggestion-icon">
+        <i class="fas fa-magic"></i>
+    </div>
+    <div>
+        <h2 class="mb-1">AI-Powered Suggestions</h2>
+        <p class="text-muted mb-0">
+            Based on content analysis, the system suggests these potential relationships between knowledge nodes.
+            These suggestions are generated using natural language processing to find meaningful connections.
+        </p>
+    </div>
+</div>
+
+<!-- Filter Panel -->
+<div class="filter-panel">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="threshold" class="form-label">Similarity Threshold</label>
+            <select class="form-select" id="threshold" name="threshold">
+                <option value="0.2" {% if request.GET.threshold == '0.2' %}selected{% endif %}>Low (20%+)</option>
+                <option value="0.3" {% if request.GET.threshold == '0.3' or not request.GET.threshold %}selected{% endif %}>Medium (30%+)</option>
+                <option value="0.4" {% if request.GET.threshold == '0.4' %}selected{% endif %}>High (40%+)</option>
+                <option value="0.5" {% if request.GET.threshold == '0.5' %}selected{% endif %}>Very High (50%+)</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="filter" class="form-label">Filter By</label>
+            <select class="form-select" id="filter" name="filter">
+                <option value="all" {% if request.GET.filter == 'all' or not request.GET.filter %}selected{% endif %}>All Suggestions</option>
+                <option value="course_ideology" {% if request.GET.filter == 'course_ideology' %}selected{% endif %}>Course → Ideology</option>
+                <option value="ideology_course" {% if request.GET.filter == 'ideology_course' %}selected{% endif %}>Ideology → Course</option>
+                <option value="course_course" {% if request.GET.filter == 'course_course' %}selected{% endif %}>Course → Course</option>
+                <option value="ideology_ideology" {% if request.GET.filter == 'ideology_ideology' %}selected{% endif %}>Ideology → Ideology</option>
+            </select>
+        </div>
+        <div class="col-md-4 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+{% if suggested_relationships %}
+    <!-- Batch Actions -->
+    <div class="batch-actions">
+        <div class="alert alert-info">
+            <div class="d-flex align-items-center">
+                <i class="fas fa-info-circle me-3 fa-lg"></i>
+                <div>
+                    <h5 class="mb-1">Suggested Relationships</h5>
+                    <p class="mb-0">
+                        Below are {{ suggested_relationships|length }} potential relationships with similarity 
+                        above {{ request.GET.threshold|default:'30' }}%. You can create them individually or select 
+                        multiple to create in batch.
+                    </p>
+                </div>
+            </div>
+        </div>
+    
+        <form id="batchForm" method="post" action="{% url 'create-batch-relationships' %}">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between mb-3">
+                <div>
+                    <button type="button" class="btn btn-outline-secondary me-2" id="selectAll">
+                        <i class="fas fa-check-square me-1"></i>Select All
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" id="deselectAll">
+                        <i class="fas fa-square me-1"></i>Deselect All
+                    </button>
+                </div>
+                <button type="submit" class="btn btn-success" id="createSelected" disabled>
+                    <i class="fas fa-magic me-1"></i>Create Selected Relationships
+                </button>
+            </div>
+    </form>
+
+    <!-- Suggestion Cards -->
+    <div class="row">
+        {% for suggestion in suggested_relationships %}
+        <div class="col-md-6 mb-4">
+            <div class="card suggestion-card">
+                <div class="card-body">
+                    <div class="form-check mb-3">
+                        <input class="form-check-input suggestion-checkbox" type="checkbox" name="suggestions[]" value="{{ suggestion.source.id }}-{{ suggestion.target.id }}-{{ suggestion.suggested_type }}" form="batchForm">
+                        <label class="form-check-label" for="suggestion-{{ forloop.counter }}">
+                            <span class="similarity-badge {% if suggestion.similarity > 0.5 %}similarity-high{% elif suggestion.similarity > 0.3 %}similarity-medium{% else %}similarity-low{% endif %}">
+                                {{ suggestion.similarity|floatformat:2 }} similarity
+                            </span>
+                        </label>
+                    </div>
+                    
+                    <div class="d-flex mb-3">
+                        <div class="flex-grow-1">
+                            <div class="badge {% if suggestion.source.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %} mb-1">
+                                {% if suggestion.source.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                            </div>
+                            <h5 class="mb-0">{{ suggestion.source.title }}</h5>
+                        </div>
+                        <div class="d-flex align-items-center mx-3">
+                            <i class="fas fa-long-arrow-alt-right text-muted"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="badge {% if suggestion.target.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %} mb-1">
+                                {% if suggestion.target.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                            </div>
+                            <h5 class="mb-0">{{ suggestion.target.title }}</h5>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="badge bg-light text-dark">
+                            <i class="fas fa-link me-1"></i>Suggested relationship: {{ suggestion.suggested_type|title }}
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-center">
+                        <a href="{% url 'node-detail' suggestion.source.id %}" class="btn btn-sm btn-outline-secondary me-2">
+                            <i class="fas fa-eye me-1"></i>View Source
+                        </a>
+                        <a href="{% url 'node-detail' suggestion.target.id %}" class="btn btn-sm btn-outline-secondary me-2">
+                            <i class="fas fa-eye me-1"></i>View Target
+                        </a>
+                        <a href="{% url 'relationship-create' %}?source={{ suggestion.source.id }}&target={{ suggestion.target.id }}&type={{ suggestion.suggested_type }}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-plus me-1"></i>Create
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-search"></i>
+        <h3>No Relationship Suggestions Found</h3>
+        <p class="text-muted">
+            There are no suggested relationships matching your current filters.
+            Try adjusting the similarity threshold or add more nodes to get better suggestions.
+        </p>
+        <div class="mt-4">
+            <a href="{% url 'relationship-suggestions' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-sync-alt me-2"></i>Reset Filters
+            </a>
+            <a href="{% url 'node-create' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Add New Node
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const checkboxes = document.querySelectorAll('.suggestion-checkbox');
+        const selectAllBtn = document.getElementById('selectAll');
+        const deselectAllBtn = document.getElementById('deselectAll');
+        const createSelectedBtn = document.getElementById('createSelected');
+        
+        // Function to update the create button state
+        function updateCreateButton() {
+            const checkedCount = document.querySelectorAll('.suggestion-checkbox:checked').length;
+            if (checkedCount > 0) {
+                createSelectedBtn.disabled = false;
+                createSelectedBtn.innerHTML = `<i class="fas fa-magic me-1"></i>Create ${checkedCount} Relationship${checkedCount > 1 ? 's' : ''}`;
+            } else {
+                createSelectedBtn.disabled = true;
+                createSelectedBtn.innerHTML = `<i class="fas fa-magic me-1"></i>Create Selected Relationships`;
+            }
+        }
+        
+        // Add event listeners to checkboxes
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', updateCreateButton);
+        });
+        
+        // Select all button
+        selectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = true;
+            });
+            updateCreateButton();
+        });
+        
+        // Deselect all button
+        deselectAllBtn.addEventListener('click', function() {
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            updateCreateButton();
+        });
+    });
+</script>
+{% endblock %}

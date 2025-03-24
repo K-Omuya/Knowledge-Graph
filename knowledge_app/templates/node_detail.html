@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ node.title }} - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.node-detail-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.node-header {
+    border-left: 4px solid {% if node.knowledge_type == 'COURSE' %}var(--primary-color){% else %}var(--secondary-color){% endif %};
+    padding-left: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.node-badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    margin-bottom: 0.5rem;
+    display: inline-block;
+}
+
+.relationship-card {
+    transition: all 0.3s ease;
+    border-left: 3px solid var(--warning-color);
+}
+
+.relationship-card:hover {
+    transform: translateY(-3px);
+}
+
+.relationship-type {
+    font-size: 0.8rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    color: #495057;
+    display: inline-block;
+    margin-bottom: 0.5rem;
+}
+
+.mini-graph {
+    height: 300px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: #f8f9fa;
+    position: relative;
+}
+
+.mini-graph-placeholder {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #adb5bd;
+}
+
+.mini-graph-placeholder i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.actions-card {
+    border-top: 4px solid var(--dark-color);
+}
+{% endblock %}
+
+{% block content %}
+<div class="node-detail-container">
+    <div class="d-flex justify-content-between align-items-start mb-4">
+        <div class="node-header">
+            <div class="badge node-badge {% if node.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %}">
+                {% if node.knowledge_type == 'COURSE' %}Course Knowledge{% else %}Ideological Element{% endif %}
+            </div>
+            <h1>{{ node.title }}</h1>
+            <p class="text-muted">
+                Created: {{ node.created_at|date:"F d, Y" }} | 
+                Last Updated: {{ node.updated_at|date:"F d, Y" }}
+            </p>
+        </div>
+        
+        <div class="btn-group" role="group">
+            <a href="{% url 'node-update' node.id %}" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-2"></i>Edit
+            </a>
+            <a href="{% url 'node-delete' node.id %}" class="btn btn-outline-danger">
+                <i class="fas fa-trash-alt me-2"></i>Delete
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Description</h5>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ node.description|linebreaks }}</p>
+                </div>
+            </div>
+            
+            <!-- Related Nodes Section -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Relationships</h5>
+                    <a href="{% url 'relationship-create' %}?source={{ node.id }}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-plus me-1"></i>Add Relationship
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if source_relationships or target_relationships %}
+                        <h6 class="text-muted mb-3">Outgoing Relationships</h6>
+                        {% if source_relationships %}
+                            {% for rel in source_relationships %}
+                                <div class="card relationship-card mb-3">
+                                    <div class="card-body">
+                                        <div class="relationship-type">
+                                            <i class="fas fa-arrow-right me-1"></i>{{ rel.get_relationship_type_display }}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">
+                                                    <a href="{% url 'node-detail' rel.target.id %}">{{ rel.target.title }}</a>
+                                                </h6>
+                                                <span class="badge {% if rel.target.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %} mt-1">
+                                                    {% if rel.target.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% if rel.description %}
+                                            <div class="mt-2 small text-muted">{{ rel.description }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No outgoing relationships.</p>
+                        {% endif %}
+                        
+                        <h6 class="text-muted mb-3 mt-4">Incoming Relationships</h6>
+                        {% if target_relationships %}
+                            {% for rel in target_relationships %}
+                                <div class="card relationship-card mb-3">
+                                    <div class="card-body">
+                                        <div class="relationship-type">
+                                            <i class="fas fa-arrow-left me-1"></i>{{ rel.get_relationship_type_display }}
+                                        </div>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-0">
+                                                    <a href="{% url 'node-detail' rel.source.id %}">{{ rel.source.title }}</a>
+                                                </h6>
+                                                <span class="badge {% if rel.source.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %} mt-1">
+                                                    {% if rel.source.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {% if rel.description %}
+                                            <div class="mt-2 small text-muted">{{ rel.description }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <p class="text-muted">No incoming relationships.</p>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-link text-muted mb-3" style="font-size: 2.5rem;"></i>
+                            <h6>No relationships found</h6>
+                            <p class="text-muted">This node is not connected to any other nodes yet.</p>
+                            <a href="{% url 'relationship-create' %}?source={{ node.id }}" class="btn btn-outline-primary">
+                                <i class="fas fa-plus me-2"></i>Create Relationship
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <!-- Mini Graph Visualization -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Node Network</h5>
+                </div>
+                <div class="card-body p-2">
+                    <div class="mini-graph">
+                        <div class="mini-graph-placeholder">
+                            <i class="fas fa-project-diagram"></i>
+                            <p>Mini graph visualization coming soon</p>
+                            <a href="{% url 'graph-visualization' %}" class="btn btn-sm btn-outline-primary">
+                                View in Full Graph
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Actions Card -->
+            <div class="card mb-4 actions-card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'relationship-create' %}?source={{ node.id }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-right me-2"></i>Add Outgoing Relationship
+                        </a>
+                        <a href="{% url 'relationship-create' %}?target={{ node.id }}" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Add Incoming Relationship
+                        </a>
+                        <a href="{% url 'graph-visualization' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-project-diagram me-2"></i>View in Knowledge Graph
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Metadata Card -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Node Metadata</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Node Type</span>
+                            <span class="badge {% if node.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %}">
+                                {% if node.knowledge_type == 'COURSE' %}Course Knowledge{% else %}Ideological Element{% endif %}
+                            </span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>ID</span>
+                            <span class="text-muted">{{ node.id }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Total Relationships</span>
+                            <span class="badge bg-secondary">{{ source_relationships.count|add:target_relationships.count }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Created</span>
+                            <span class="text-muted">{{ node.created_at|date:"M d, Y" }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <span>Last Updated</span>
+                            <span class="text-muted">{{ node.updated_at|date:"M d, Y" }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

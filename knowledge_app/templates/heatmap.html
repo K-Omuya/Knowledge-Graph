@@ -1,0 +1,340 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Knowledge Graph Heatmap{% endblock %}
+
+{% block custom_css %}
+{% load crispy_forms_tags %}
+{% load custom_filters %}
+
+.heatmap-container {
+    padding: 2rem 0;
+}
+
+.heatmap-card {
+    overflow-x: auto;
+}
+
+.heatmap-grid {
+    border-collapse: collapse;
+    min-width: 100%;
+}
+
+.heatmap-grid th {
+    padding: 10px;
+    text-align: left;
+    font-weight: 600;
+    position: sticky;
+    top: 0;
+    background-color: #fff;
+    z-index: 10;
+}
+
+.heatmap-grid td {
+    width: 40px;
+    height: 40px;
+    text-align: center;
+    border: 1px solid #f8f9fa;
+    transition: all 0.2s ease;
+}
+
+.heatmap-grid th.vertical-header {
+    height: 150px;
+    white-space: nowrap;
+    vertical-align: bottom;
+    text-align: left;
+    padding-left: 0;
+    padding-bottom: 10px;
+}
+
+.heatmap-grid th.vertical-header > div {
+    transform: rotate(-45deg);
+    transform-origin: bottom left;
+    width: 30px;
+    margin-left: 20px;
+}
+
+.heatmap-grid .corner-header {
+    background-color: transparent;
+    border: none;
+}
+
+.heatmap-cell-0 {
+    background-color: #f8f9fa;
+}
+
+.heatmap-cell-1 {
+    background-color: #cfe2ff;
+}
+
+.heatmap-legend {
+    display: flex;
+    align-items: center;
+    margin-top: 1rem;
+    justify-content: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-right: 2rem;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    margin-right: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.no-connection {
+    background-color: #f8f9fa;
+}
+
+.has-connection {
+    background-color: #cfe2ff;
+}
+
+.heatmap-controls {
+    margin-bottom: 2rem;
+}
+
+.node-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    margin-right: 0.5rem;
+}
+
+.course-badge {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.ideology-badge {
+    background-color: var(--secondary-color);
+    color: white;
+}
+
+.tooltip-style {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    max-width: 300px;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+}
+
+.metrics-card {
+    transition: all 0.3s ease;
+}
+
+.metrics-card:hover {
+    transform: translateY(-5px);
+}
+
+.metrics-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Knowledge Connection Heatmap</h1>
+    <div>
+        <a href="{% url 'analytics-dashboard' %}" class="btn btn-primary">
+            <i class="fas fa-chart-line me-2"></i>Analytics Dashboard
+        </a>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card metrics-card h-100">
+            <div class="card-body text-center">
+                <div class="metrics-icon">
+                    <i class="fas fa-sitemap"></i>
+                </div>
+                <h5 class="card-title">Connection Density</h5>
+                <div class="display-5">{{ connection_density|default:"0.0"|floatformat:2 }}</div>
+                <p class="text-muted">Ratio of existing connections to possible connections</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card metrics-card h-100">
+            <div class="card-body text-center">
+                <div class="metrics-icon">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h5 class="card-title">Total Connections</h5>
+                <div class="display-5">{{ total_connections|default:"0" }}</div>
+                <p class="text-muted">Number of connections between course and ideology nodes</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card metrics-card h-100">
+            <div class="card-body text-center">
+                <div class="metrics-icon">
+                    <i class="fas fa-percentage"></i>
+                </div>
+                <h5 class="card-title">Coverage</h5>
+                <div class="display-5">{{ coverage_percentage|default:"0"|floatformat:0 }}%</div>
+                <p class="text-muted">Percentage of nodes with at least one connection</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Connection Heatmap</h5>
+        <div>
+            <span class="node-badge course-badge">{{ course_nodes|default:"0" }} Course Nodes</span>
+            <span class="node-badge ideology-badge">{{ ideology_nodes|default:"0" }} Ideology Nodes</span>
+        </div>
+    </div>
+    <div class="card-body heatmap-card">
+        {% if matrix %}
+            {% if course_nodes|length > 0 and ideology_nodes|length > 0 %}
+                <table class="heatmap-grid">
+                    <thead>
+                        <tr>
+                            <th class="corner-header"></th>
+                            {% for ideology_node in ideology_nodes %}
+                                <th class="vertical-header">
+                                    <div title="{{ ideology_node.title }}">{{ ideology_node.title|truncatechars:25 }}</div>
+                                </th>
+                            {% endfor %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for course_node in course_nodes %}
+                            <tr>
+                                <th>{{ course_node.title|truncatechars:30 }}</th>
+                                {% with row_index=forloop.counter0 %}
+                                    {% for ideology_node in ideology_nodes %}
+                                        {% with col_index=forloop.counter0 %}
+                                            <td class="heatmap-cell-{{ matrix|index:row_index|index:col_index }}" 
+                                                data-course="{{ course_node.title }}"
+                                                data-ideology="{{ ideology_node.title }}"
+                                                data-connected="{{ matrix|index:row_index|index:col_index }}">
+                                            </td>
+                                        {% endwith %}
+                                    {% endfor %}
+                                {% endwith %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <div class="heatmap-legend">
+                    <div class="legend-item">
+                        <div class="legend-color no-connection"></div>
+                        <span>No Connection</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color has-connection"></div>
+                        <span>Has Connection</span>
+                    </div>
+                </div>
+                
+                <div id="tooltip" class="tooltip-style"></div>
+            {% else %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    There are not enough nodes to generate a heatmap. Please create both course knowledge and ideological element nodes.
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="alert alert-warning">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                No data available to generate the heatmap.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Top Missing Connections</h5>
+    </div>
+    <div class="card-body">
+        {% if suggested_connections %}
+            <p class="text-muted">These course-ideology pairs are likely to have meaningful connections based on content analysis:</p>
+            
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Course Knowledge</th>
+                            <th>Ideological Element</th>
+                            <th>Similarity Score</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for suggestion in suggested_connections %}
+                            <tr>
+                                <td>{{ suggestion.source.title }}</td>
+                                <td>{{ suggestion.target.title }}</td>
+                                <td>{{ suggestion.similarity|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{% url 'relationship-create' %}?source={{ suggestion.source.id }}&target={{ suggestion.target.id }}" class="btn btn-sm btn-outline-primary">
+                                        Create Connection
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                No missing connection suggestions are available at this time.
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tooltip = document.getElementById('tooltip');
+        const heatmapCells = document.querySelectorAll('[data-course]');
+        
+        heatmapCells.forEach(cell => {
+            cell.addEventListener('mouseover', function(e) {
+                const course = this.getAttribute('data-course');
+                const ideology = this.getAttribute('data-ideology');
+                const connected = this.getAttribute('data-connected') === '1' ? 'Connected' : 'Not connected';
+                
+                tooltip.innerHTML = `<strong>${course}</strong> → <strong>${ideology}</strong><br>${connected}`;
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY + 10) + 'px';
+                tooltip.style.opacity = 1;
+            });
+            
+            cell.addEventListener('mouseout', function() {
+                tooltip.style.opacity = 0;
+            });
+            
+            cell.addEventListener('mousemove', function(e) {
+                tooltip.style.left = (e.pageX + 10) + 'px';
+                tooltip.style.top = (e.pageY + 10) + 'px';
+            });
+        });
+    });
+</script>
+{% endblock %}

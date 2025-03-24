@@ -1,0 +1,501 @@
+{% extends 'base.html' %}
+
+{% block title %}Documentation - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.documentation-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.toc {
+    position: sticky;
+    top: 100px;
+}
+
+.toc-list {
+    padding-left: 0;
+    list-style: none;
+}
+
+.toc-list li {
+    margin-bottom: 0.5rem;
+}
+
+.toc-list li a {
+    display: block;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    color: var(--dark-color);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.toc-list li a:hover {
+    background-color: #f0f7ff;
+}
+
+.toc-list li a.active {
+    background-color: #f0f7ff;
+    border-left: 3px solid var(--primary-color);
+    font-weight: 500;
+}
+
+.section {
+    margin-bottom: 3rem;
+}
+
+.section-title {
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+}
+
+.doc-img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin: 1.5rem 0;
+}
+
+.code-block {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+    font-family: monospace;
+    font-size: 0.9rem;
+}
+
+.section-anchor {
+    display: block;
+    position: relative;
+    top: -100px;
+    visibility: hidden;
+}
+{% endblock %}
+
+{% block content %}
+<div class="documentation-container py-4">
+    <div class="row">
+        <div class="col-lg-3">
+            <div class="toc">
+                <h5>Table of Contents</h5>
+                <ul class="toc-list">
+                    <li><a href="#getting-started" class="active">Getting Started</a></li>
+                    <li><a href="#knowledge-nodes">Knowledge Nodes</a></li>
+                    <li><a href="#relationships">Relationships</a></li>
+                    <li><a href="#visualization">Graph Visualization</a></li>
+                    <li><a href="#learning-paths">Learning Paths</a></li>
+                    <li><a href="#quizzes">Quizzes & Assessment</a></li>
+                    <li><a href="#account">Your Account</a></li>
+                    <li><a href="#advanced">Advanced Features</a></li>
+                    <li><a href="#api">API Documentation</a></li>
+                    <li><a href="#faq">FAQ</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="col-lg-9">
+            <div class="content">
+                <h1>Knowledge Graph System Documentation</h1>
+                <p class="lead">This documentation will help you understand and navigate the Knowledge Graph System for Course Ideological & Political Education.</p>
+                
+                <div class="section">
+                    <span class="section-anchor" id="getting-started"></span>
+                    <h2 class="section-title">Getting Started</h2>
+                    <p>
+                        The Knowledge Graph System is designed to bridge the gap between technical course content and ideological education. 
+                        It allows you to explore connections between course knowledge and ideological elements through an interactive graph interface.
+                    </p>
+                    
+                    <h4>Key Features:</h4>
+                    <ul>
+                        <li>Interactive knowledge graph visualization</li>
+                        <li>Creation and management of knowledge nodes</li>
+                        <li>Establishing relationships between concepts</li>
+                        <li>Structured learning paths</li>
+                        <li>Self-assessment through quizzes</li>
+                        <li>Collaborative learning environment</li>
+                    </ul>
+                    
+                    <h4>Navigation:</h4>
+                    <p>
+                        The main navigation menu provides access to all major sections of the system:
+                    </p>
+                    <ul>
+                        <li><strong>Home</strong> - Main dashboard with overview statistics and quick actions</li>
+                        <li><strong>Knowledge Nodes</strong> - Browse, create, and manage knowledge nodes</li>
+                        <li><strong>Visualization</strong> - Interactive graph visualization tools</li>
+                        <li><strong>Learning</strong> - Access learning paths and assessment tools</li>
+                        <li><strong>Tools</strong> - Additional utilities and analytics</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="knowledge-nodes"></span>
+                    <h2 class="section-title">Knowledge Nodes</h2>
+                    <p>
+                        Knowledge nodes represent individual concepts in the knowledge graph. They come in two types:
+                    </p>
+                    <ul>
+                        <li><strong>Course Knowledge</strong> - Technical content and course-specific concepts</li>
+                        <li><strong>Ideological Elements</strong> - Ideological and political education aspects</li>
+                    </ul>
+                    
+                    <h4>Creating a Knowledge Node:</h4>
+                    <ol>
+                        <li>Navigate to <strong>Knowledge Nodes</strong> in the main menu</li>
+                        <li>Click the <strong>Add New Node</strong> button</li>
+                        <li>Fill in the title and description</li>
+                        <li>Select the node type (Course or Ideology)</li>
+                        <li>Click <strong>Create Node</strong> to save</li>
+                    </ol>
+                    
+                    <h4>Working with Nodes:</h4>
+                    <ul>
+                        <li>You can view all nodes in the system through the Knowledge Nodes page</li>
+                        <li>Use filters to find specific types of nodes</li>
+                        <li>Click on any node to view its details, relationships, and attached resources</li>
+                        <li>Each node has options to edit or delete (for creators and administrators)</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="relationships"></span>
+                    <h2 class="section-title">Relationships</h2>
+                    <p>
+                        Relationships connect knowledge nodes, showing how different concepts relate to each other. 
+                        These connections are what make the knowledge graph powerful for learning.
+                    </p>
+                    
+                    <h4>Relationship Types:</h4>
+                    <ul>
+                        <li><strong>Related To</strong> - General connection between nodes</li>
+                        <li><strong>Part Of</strong> - Hierarchical relationship (subset or component)</li>
+                        <li><strong>Influences</strong> - Causal relationship (one concept affects another)</li>
+                        <li><strong>Example Of</strong> - Illustrative relationship (one concept exemplifies another)</li>
+                    </ul>
+                    
+                    <h4>Creating Relationships:</h4>
+                    <ol>
+                        <li>Click <strong>Create Relationship</strong> from the main menu or from a node's detail page</li>
+                        <li>Select a source node (starting point)</li>
+                        <li>Choose the relationship type</li>
+                        <li>Select a target node (ending point)</li>
+                        <li>Add an optional description of how they're related</li>
+                        <li>Click <strong>Create Relationship</strong> to save</li>
+                    </ol>
+                    
+                    <h4>Best Practices:</h4>
+                    <ul>
+                        <li>Create meaningful relationships that highlight important connections</li>
+                        <li>Use descriptive text to explain why nodes are related</li>
+                        <li>Consider how course knowledge relates to ideological elements</li>
+                        <li>Look for suggested relationships in the Tools section</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="visualization"></span>
+                    <h2 class="section-title">Graph Visualization</h2>
+                    <p>
+                        The visualization tools allow you to see and interact with the knowledge graph.
+                        You can explore connections, discover new relationships, and get a big-picture view of the knowledge domain.
+                    </p>
+                    
+                    <h4>Using the Basic Visualization:</h4>
+                    <ul>
+                        <li><strong>Zoom</strong> - Use mouse wheel or pinch gesture on touch devices</li>
+                        <li><strong>Pan</strong> - Click and drag to move around the graph</li>
+                        <li><strong>Select</strong> - Click on a node to see its details</li>
+                        <li><strong>Hover</strong> - Hover over nodes or edges to see tooltips</li>
+                    </ul>
+                    
+                    <h4>Advanced Visualization Features:</h4>
+                    <ul>
+                        <li><strong>Filtering</strong> - Filter by node or relationship type</li>
+                        <li><strong>Layouts</strong> - Choose different graph layout algorithms</li>
+                        <li><strong>Focus</strong> - Center on specific nodes of interest</li>
+                        <li><strong>Highlighting</strong> - Highlight connected nodes and paths</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="learning-paths"></span>
+                    <h2 class="section-title">Learning Paths</h2>
+                    <p>
+                        Learning paths provide structured sequences through the knowledge graph,
+                        guiding you through related concepts in a logical order.
+                    </p>
+                    
+                    <h4>Following a Learning Path:</h4>
+                    <ol>
+                        <li>Browse available learning paths on the Learning Paths page</li>
+                        <li>Select a path that interests you</li>
+                        <li>Start the path to begin learning</li>
+                        <li>Progress through each step, marking them as complete</li>
+                        <li>Review your progress on your user profile</li>
+                    </ol>
+                    
+                    <h4>Creating Learning Paths:</h4>
+                    <p>
+                        Users with appropriate permissions can create learning paths to share with others:
+                    </p>
+                    <ol>
+                        <li>Navigate to Learning Paths and click "Create Learning Path"</li>
+                        <li>Add a title, description, and learning objectives</li>
+                        <li>Select nodes to include in the path</li>
+                        <li>Arrange them in a logical sequence</li>
+                        <li>Add custom content or instructions for each step</li>
+                        <li>Set the visibility (public or private)</li>
+                        <li>Save the learning path</li>
+                    </ol>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="quizzes"></span>
+                    <h2 class="section-title">Quizzes & Assessment</h2>
+                    <p>
+                        Quizzes help you test your understanding of both course knowledge and ideological elements.
+                    </p>
+                    
+                    <h4>Taking Quizzes:</h4>
+                    <ol>
+                        <li>Navigate to the Quizzes section</li>
+                        <li>Choose a quiz to take</li>
+                        <li>Answer the questions within the time limit (if applicable)</li>
+                        <li>Submit your answers to see your results</li>
+                        <li>Review correct answers and explanations</li>
+                    </ol>
+                    
+                    <h4>Quiz Types:</h4>
+                    <ul>
+                        <li><strong>Multiple Choice</strong> - Select the correct answer(s)</li>
+                        <li><strong>True/False</strong> - Determine if a statement is true or false</li>
+                        <li><strong>Matching</strong> - Match related concepts</li>
+                        <li><strong>Text Response</strong> - Write a short answer</li>
+                        <li><strong>Relationship Identification</strong> - Identify how concepts are related</li>
+                    </ul>
+                    
+                    <h4>Creating Quizzes:</h4>
+                    <p>
+                        Users with appropriate permissions can create quizzes:
+                    </p>
+                    <ol>
+                        <li>Navigate to Quizzes and click "Create Quiz"</li>
+                        <li>Enter quiz details (title, description, settings)</li>
+                        <li>Add questions of various types</li>
+                        <li>Set correct answers and explanations</li>
+                        <li>Save and publish the quiz</li>
+                    </ol>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="account"></span>
+                    <h2 class="section-title">Your Account</h2>
+                    <p>
+                        Your user account gives you personalized access to the system and tracks your progress.
+                    </p>
+                    
+                    <h4>Profile Management:</h4>
+                    <ul>
+                        <li>View your profile by clicking your username in the top-right corner</li>
+                        <li>Edit your profile information and preferences</li>
+                        <li>Upload a profile picture</li>
+                        <li>Manage your password and security settings</li>
+                    </ul>
+                    
+                    <h4>Activity Tracking:</h4>
+                    <p>
+                        Your profile page shows:
+                    </p>
+                    <ul>
+                        <li>Recent activity in the system</li>
+                        <li>Learning progress on paths you've started</li>
+                        <li>Quiz results and performance</li>
+                        <li>Contributions you've made to the knowledge graph</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="advanced"></span>
+                    <h2 class="section-title">Advanced Features</h2>
+                    <p>
+                        Beyond the basic functionality, the system offers several advanced features:
+                    </p>
+                    
+                    <h4>Analytics Dashboard:</h4>
+                    <p>
+                        The Analytics Dashboard provides insights into the knowledge graph:
+                    </p>
+                    <ul>
+                        <li>Most connected concepts</li>
+                        <li>Knowledge "bridge" nodes between course and ideology</li>
+                        <li>Relationship type distribution</li>
+                        <li>Connection density heatmap</li>
+                    </ul>
+                    
+                    <h4>Import/Export:</h4>
+                    <p>
+                        For data management and sharing:
+                    </p>
+                    <ul>
+                        <li>Export the entire graph in various formats (JSON, CSV, GraphML)</li>
+                        <li>Import nodes and relationships from external sources</li>
+                        <li>Backup and restore functionality</li>
+                    </ul>
+                    
+                    <h4>Relationship Suggestions:</h4>
+                    <p>
+                        The system can analyze node content to suggest potential relationships:
+                    </p>
+                    <ul>
+                        <li>View suggested relationships based on content similarity</li>
+                        <li>Choose to accept or reject suggestions</li>
+                        <li>Adjust similarity threshold to control suggestion quality</li>
+                    </ul>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="api"></span>
+                    <h2 class="section-title">API Documentation</h2>
+                    <p>
+                        The system provides API endpoints for programmatic access:
+                    </p>
+                    
+                    <h4>Available Endpoints:</h4>
+                    <ul>
+                        <li><code>/api/search/</code> - Search for nodes by keywords</li>
+                        <li><code>/api/suggest-relationships/</code> - Get relationship suggestions</li>
+                        <li><code>/api/get-node-data/:id/</code> - Get detailed data for a specific node</li>
+                    </ul>
+                    
+                    <h4>Authentication:</h4>
+                    <p>
+                        All API requests require authentication. Contact the system administrator for API access credentials.
+                    </p>
+                </div>
+                
+                <div class="section">
+                    <span class="section-anchor" id="faq"></span>
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqOne">
+                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                                    What is the purpose of this knowledge graph system?
+                                </button>
+                            </h2>
+                            <div id="collapseOne" class="accordion-collapse collapse show" aria-labelledby="faqOne" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    The Knowledge Graph System is designed to integrate professional course knowledge with ideological and political education. It helps students understand the connections between technical concepts and their broader social, ethical, and political implications.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqTwo">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+                                    How do I contribute to the knowledge graph?
+                                </button>
+                            </h2>
+                            <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="faqTwo" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    You can contribute by creating new knowledge nodes, establishing relationships between existing nodes, creating learning paths, and adding quizzes. All contributions are moderated to ensure quality.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqThree">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+                                    Can I export my learning progress?
+                                </button>
+                            </h2>
+                            <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="faqThree" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    Yes, you can export your learning progress from your profile page. The export includes completed learning paths, quiz results, and contributions to the knowledge graph.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqFour">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+                                    How is the graph visualization generated?
+                                </button>
+                            </h2>
+                            <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="faqFour" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    The visualization is generated using network analysis algorithms that map the relationships between knowledge nodes. Different layout algorithms (force-directed, hierarchical, radial) provide various ways to view the same underlying data.
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="faqFive">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFive" aria-expanded="false" aria-controls="collapseFive">
+                                    What if I find incorrect information?
+                                </button>
+                            </h2>
+                            <div id="collapseFive" class="accordion-collapse collapse" aria-labelledby="faqFive" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">
+                                    If you find incorrect information, you can report it by clicking the "Report" button on the node or relationship page. Administrators will review the report and take appropriate action.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Highlight active section in TOC based on scroll position
+        const sections = document.querySelectorAll('.section');
+        const tocLinks = document.querySelectorAll('.toc-list li a');
+        
+        window.addEventListener('scroll', function() {
+            let current = '';
+            
+            sections.forEach(section => {
+                const sectionTop = section.getBoundingClientRect().top;
+                if (sectionTop < 150) {
+                    current = section.querySelector('.section-anchor').getAttribute('id');
+                }
+            });
+            
+            tocLinks.forEach(link => {
+                link.classList.remove('active');
+                if (link.getAttribute('href').slice(1) === current) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        
+        // Make TOC links scroll smoothly
+        tocLinks.forEach(link => {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                const targetSection = document.querySelector(targetId);
+                
+                window.scrollTo({
+                    top: targetSection.getBoundingClientRect().top + window.pageYOffset - 100,
+                    behavior: 'smooth'
+                });
+                
+                // Update active class
+                tocLinks.forEach(link => link.classList.remove('active'));
+                this.classList.add('active');
+            });
+        });
+    });
+</script>
+{% endblock %}

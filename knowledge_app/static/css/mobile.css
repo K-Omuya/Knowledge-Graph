@@ -1,0 +1,278 @@
+/* Mobile Optimization Stylesheet */
+
+/* Base mobile styles */
+@media (max-width: 768px) {
+    body {
+        font-size: 16px;
+    }
+    
+    .container {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    /* Navbar optimizations */
+    .navbar-brand {
+        font-size: 1.2rem;
+    }
+    
+    /* Make buttons easier to tap */
+    .btn {
+        padding: 0.5rem 0.75rem;
+        font-size: 1rem;
+    }
+    
+    /* Improve form element usability on mobile */
+    input, select, textarea {
+        font-size: 16px !important; /* Prevents iOS zoom on focus */
+    }
+    
+    /* Card adjustments */
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    /* Visualization container adjustments */
+    .visualization-container {
+        height: 60vh !important;
+    }
+    
+    /* Control panel adjustments */
+    .control-panel {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        width: 100% !important;
+        margin-bottom: 1rem;
+    }
+    
+    /* Touch-friendly adjustments */
+    .zoom-controls button {
+        padding: 0.6rem;
+    }
+    
+    /* Tabs for filters on small screens */
+    .filter-tabs {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+    
+    .filter-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Adjustments for node cards */
+    .node-card .card-body {
+        padding: 1rem;
+    }
+    
+    .node-type-badge {
+        font-size: 0.7rem;
+    }
+    
+    /* Table adjustments */
+    .table-responsive {
+        margin-bottom: 1rem;
+    }
+    
+    /* Collapse adjacent buttons into button groups */
+    .btn-group-responsive {
+        display: flex;
+        flex-wrap: wrap;
+    }
+    
+    .btn-group-responsive .btn {
+        flex: 1 0 auto;
+        margin-bottom: 0.5rem;
+    }
+    
+    /* Bottom navigation for mobile */
+    .mobile-bottom-nav {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background-color: var(--dark-color);
+        display: flex;
+        justify-content: space-around;
+        padding: 0.5rem 0;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        z-index: 1000;
+    }
+    
+    .mobile-bottom-nav a {
+        color: white;
+        text-align: center;
+        font-size: 0.7rem;
+    }
+    
+    .mobile-bottom-nav i {
+        font-size: 1.2rem;
+        display: block;
+        margin-bottom: 0.2rem;
+    }
+    
+    /* Extra padding at bottom to account for bottom nav */
+    .has-mobile-nav {
+        padding-bottom: 70px;
+    }
+    
+    /* Floating action button for mobile */
+    .floating-action-btn {
+        position: fixed;
+        bottom: 80px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: var(--primary-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+    }
+    
+    .floating-action-btn i {
+        font-size: 1.5rem;
+    }
+    
+    /* Optimize relationship forms for mobile */
+    .relationship-illustration i {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Adjust pagination for mobile */
+    .pagination .page-link {
+        padding: 0.4rem 0.75rem;
+    }
+    
+    /* Optimize node details page */
+    .node-detail-container .card-header {
+        padding: 0.75rem 1rem;
+    }
+    
+    .node-detail-container .btn-group {
+        margin-top: 0.5rem;
+    }
+    
+    /* Touch-friendly sliders */
+    input[type=range] {
+        height: 30px;
+    }
+    
+    /* Mobile-optimized search */
+    .mobile-search-wrapper {
+        position: relative;
+    }
+    
+    .mobile-search-input {
+        width: 100%;
+        padding-right: 40px;
+    }
+    
+    .mobile-search-button {
+        position: absolute;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: none;
+    }
+}
+
+/* Small phones */
+@media (max-width: 576px) {
+    .card-title {
+        font-size: 1.1rem;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    /* Simplify complex layouts */
+    .row-cols-2 > * {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    
+    /* Stack buttons on very small screens */
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .d-flex.justify-content-between .btn {
+        width: 100%;
+    }
+    
+    /* Simplify footer */
+    .footer h5 {
+        font-size: 1rem;
+    }
+    
+    /* Adjust visualizations further */
+    .visualization-container {
+        height: 50vh !important;
+    }
+}
+
+/* Landscape mode adjustments */
+@media (max-width: 900px) and (orientation: landscape) {
+    .mobile-bottom-nav {
+        padding: 0.3rem 0;
+    }
+    
+    .mobile-bottom-nav i {
+        font-size: 1rem;
+        margin-bottom: 0.1rem;
+    }
+    
+    .floating-action-btn {
+        bottom: 65px;
+    }
+    
+    .has-mobile-nav {
+        padding-bottom: 50px;
+    }
+}
+
+/* Touch-friendly controls for all touch screens */
+@media (hover: none) {
+    /* Larger touch targets */
+    .btn, .form-control, .nav-link {
+        min-height: 44px;
+    }
+    
+    /* Better touch feedback */
+    .btn:active, .nav-link:active {
+        transform: scale(0.98);
+    }
+    
+    /* Disable hover effects that might cause issues */
+    .card:hover {
+        transform: none !important;
+    }
+    
+    /* Ensure sufficient spacing between touch targets */
+    .btn + .btn {
+        margin-left: 0.5rem;
+    }
+}

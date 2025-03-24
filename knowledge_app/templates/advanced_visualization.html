@@ -1,0 +1,409 @@
+{% extends 'base.html' %}
+
+{% block title %}Advanced Graph Visualization{% endblock %}
+
+{% block custom_css %}
+.visualization-container {
+    height: 80vh;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.control-panel {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background-color: rgba(255, 255, 255, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    width: 300px;
+}
+
+.filter-section {
+    margin-bottom: 15px;
+}
+
+.zoom-controls {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+}
+
+.zoom-controls button {
+    flex: 1;
+}
+
+.search-panel {
+    margin-bottom: 15px;
+}
+
+.layout-options {
+    margin-top: 15px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.color-indicator {
+    width: 15px;
+    height: 15px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Advanced Knowledge Graph Visualization</h1>
+    <div>
+        <a href="{% url 'node-list' %}" class="btn btn-outline-primary me-2">
+            <i class="fas fa-list me-1"></i>All Nodes
+        </a>
+        <a href="{% url 'node-create' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i>Add Node
+        </a>
+    </div>
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">About the Advanced Visualization</h5>
+        <p>
+            This visualization offers enhanced controls to explore relationships between
+            course knowledge and ideological elements. Use the control panel to filter nodes,
+            change layouts, search for specific concepts, and adjust the view.
+        </p>
+    </div>
+</div>
+
+<div class="visualization-container">
+    <div class="control-panel">
+        <h5 class="mb-3">Controls</h5>
+        
+        <div class="search-panel">
+            <label for="nodeSearch" class="form-label">Search Nodes</label>
+            <input type="text" class="form-control" id="nodeSearch" placeholder="Enter node title...">
+        </div>
+        
+        <div class="filter-section">
+            <label class="form-label">Filter By Type</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showCourseNodes" checked>
+                <label class="form-check-label" for="showCourseNodes">
+                    Course Knowledge
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showIdeologyNodes" checked>
+                <label class="form-check-label" for="showIdeologyNodes">
+                    Ideological Elements
+                </label>
+            </div>
+        </div>
+        
+        <div class="filter-section">
+            <label class="form-label">Filter By Relationships</label>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showRelatedTo" checked>
+                <label class="form-check-label" for="showRelatedTo">Related To</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showPartOf" checked>
+                <label class="form-check-label" for="showPartOf">Part Of</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showInfluences" checked>
+                <label class="form-check-label" for="showInfluences">Influences</label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="showExampleOf" checked>
+                <label class="form-check-label" for="showExampleOf">Example Of</label>
+            </div>
+        </div>
+        
+        <div class="layout-options">
+            <label class="form-label">Layout Type</label>
+            <select class="form-select" id="layoutType">
+                <option value="force">Force-Directed</option>
+                <option value="hierarchical">Hierarchical</option>
+                <option value="radial">Radial</option>
+                <option value="grid">Grid</option>
+            </select>
+        </div>
+        
+        <div class="zoom-controls">
+            <button class="btn btn-sm btn-outline-secondary" id="zoomIn">
+                <i class="fas fa-search-plus"></i> Zoom In
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="zoomOut">
+                <i class="fas fa-search-minus"></i> Zoom Out
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" id="resetZoom">
+                <i class="fas fa-redo"></i> Reset
+            </button>
+        </div>
+        
+        <hr>
+        
+        <div class="legend">
+            <div class="legend-item">
+                <div class="color-indicator" style="background-color: #3498db;"></div>
+                <div>Course Knowledge</div>
+            </div>
+            <div class="legend-item">
+                <div class="color-indicator" style="background-color: #2ecc71;"></div>
+                <div>Ideological Element</div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="graph-container" style="width: 100%; height: 100%;">
+        {{ graph_html|safe }}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // This assumes network is globally available from the pyvis output
+        if (typeof network === 'undefined') {
+            console.warn('Network visualization not found');
+            return;
+        }
+        
+        // Store original data to use when filtering
+        const allNodes = new Map(network.body.data.nodes.get().map(node => [node.id, node]));
+        const allEdges = new Map(network.body.data.edges.get().map(edge => [edge.id, edge]));
+        
+        // Node search functionality
+        const nodeSearch = document.getElementById('nodeSearch');
+        nodeSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            if (!searchTerm) {
+                resetFilters();
+                return;
+            }
+            
+            const matchingNodes = Array.from(allNodes.values()).filter(node => 
+                node.label.toLowerCase().includes(searchTerm)
+            );
+            const matchingNodeIds = new Set(matchingNodes.map(n => n.id));
+            
+            const connectedEdges = Array.from(allEdges.values()).filter(edge => 
+                matchingNodeIds.has(edge.from) || matchingNodeIds.has(edge.to)
+            );
+            
+            network.body.data.nodes.clear();
+            network.body.data.nodes.add(matchingNodes);
+            
+            network.body.data.edges.clear();
+            network.body.data.edges.add(connectedEdges);
+            
+            if (matchingNodes.length === 1) {
+                network.focus(matchingNodes[0].id, {
+                    scale: 1.5,
+                    animation: true
+                });
+            } else {
+                network.fit({animation: true});
+            }
+        });
+        
+        // Node type filters
+        const courseNodesCheckbox = document.getElementById('showCourseNodes');
+        const ideologyNodesCheckbox = document.getElementById('showIdeologyNodes');
+        
+        function updateNodeFilters() {
+            const showCourse = courseNodesCheckbox.checked;
+            const showIdeology = ideologyNodesCheckbox.checked;
+            
+            const filteredNodes = Array.from(allNodes.values()).filter(node => 
+                (showCourse && node.group === 1) || (showIdeology && node.group === 2)
+            );
+            const filteredNodeIds = new Set(filteredNodes.map(n => n.id));
+            
+            const filteredEdges = Array.from(allEdges.values()).filter(edge => 
+                filteredNodeIds.has(edge.from) && filteredNodeIds.has(edge.to)
+            );
+            
+            network.body.data.nodes.clear();
+            network.body.data.nodes.add(filteredNodes);
+            
+            network.body.data.edges.clear();
+            network.body.data.edges.add(filteredEdges);
+            
+            network.fit({animation: true});
+        }
+        
+        courseNodesCheckbox.addEventListener('change', updateNodeFilters);
+        ideologyNodesCheckbox.addEventListener('change', updateNodeFilters);
+        
+        // Relationship type filters
+        const relationshipCheckboxes = {
+            'Related To': document.getElementById('showRelatedTo'),
+            'Part Of': document.getElementById('showPartOf'),
+            'Influences': document.getElementById('showInfluences'),
+            'Example Of': document.getElementById('showExampleOf')
+        };
+        
+        function updateRelationshipFilters() {
+            const enabledRelationships = Object.entries(relationshipCheckboxes)
+                .filter(([_, checkbox]) => checkbox.checked)
+                .map(([relType, _]) => relType);
+            
+            const filteredEdges = Array.from(allEdges.values()).filter(edge => 
+                enabledRelationships.includes(edge.title)
+            );
+            
+            // Get all nodes connected to the filtered edges
+            const connectedNodeIds = new Set();
+            filteredEdges.forEach(edge => {
+                connectedNodeIds.add(edge.from);
+                connectedNodeIds.add(edge.to);
+            });
+            
+            const filteredNodes = Array.from(allNodes.values()).filter(node => 
+                connectedNodeIds.has(node.id)
+            );
+            
+            network.body.data.nodes.clear();
+            network.body.data.nodes.add(filteredNodes);
+            
+            network.body.data.edges.clear();
+            network.body.data.edges.add(filteredEdges);
+            
+            network.fit({animation: true});
+        }
+        
+        Object.values(relationshipCheckboxes).forEach(checkbox => {
+            checkbox.addEventListener('change', updateRelationshipFilters);
+        });
+        
+        // Layout options
+        const layoutSelect = document.getElementById('layoutType');
+        layoutSelect.addEventListener('change', function() {
+            const layout = this.value;
+            let options = {};
+            
+            if (layout === 'hierarchical') {
+                options = {
+                    hierarchical: {
+                        direction: 'UD',
+                        sortMethod: 'directed',
+                        nodeSpacing: 150,
+                        treeSpacing: 200
+                    }
+                };
+            } else if (layout === 'radial') {
+                // For radial layout, use a circular initial positioning
+                const nodeCount = network.body.data.nodes.length;
+                const radius = Math.min(network.canvas.body.container.clientWidth, 
+                                       network.canvas.body.container.clientHeight) / 2 - 100;
+                
+                network.body.data.nodes.get().forEach((node, i) => {
+                    const angle = 2 * Math.PI * i / nodeCount;
+                    const x = radius * Math.cos(angle);
+                    const y = radius * Math.sin(angle);
+                    network.body.data.nodes.update({
+                        id: node.id,
+                        x: x,
+                        y: y,
+                        fixed: false
+                    });
+                });
+                
+                options = {
+                    physics: {
+                        stabilization: false,
+                        minVelocity: 0.01,
+                        solver: 'forceAtlas2Based',
+                        forceAtlas2Based: {
+                            gravitationalConstant: -100,
+                            centralGravity: 0.01,
+                            springLength: 100,
+                            springConstant: 0.08
+                        }
+                    }
+                };
+            } else if (layout === 'grid') {
+                options = {
+                    layout: {
+                        randomSeed: undefined,
+                        improvedLayout: true
+                    },
+                    physics: false
+                };
+                
+                // Arrange nodes in a grid pattern
+                const nodes = network.body.data.nodes.get();
+                const nodeCount = nodes.length;
+                const cols = Math.ceil(Math.sqrt(nodeCount));
+                const cellSize = 150;
+                
+                nodes.forEach((node, i) => {
+                    const col = i % cols;
+                    const row = Math.floor(i / cols);
+                    network.body.data.nodes.update({
+                        id: node.id,
+                        x: col * cellSize,
+                        y: row * cellSize,
+                        fixed: true
+                    });
+                });
+            } else {
+                // Default force-directed
+                options = {
+                    physics: {
+                        enabled: true,
+                        stabilization: false,
+                        solver: 'barnesHut',
+                        barnesHut: {
+                            gravitationalConstant: -2000,
+                            centralGravity: 0.1,
+                            springLength: 150,
+                            springConstant: 0.04,
+                        }
+                    }
+                };
+            }
+            
+            network.setOptions(options);
+            network.stabilize(100);
+        });
+        
+        // Zoom controls
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            const scale = network.getScale() * 1.2;
+            network.moveTo({scale: scale});
+        });
+        
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            const scale = network.getScale() / 1.2;
+            network.moveTo({scale: scale});
+        });
+        
+        document.getElementById('resetZoom').addEventListener('click', function() {
+            network.fit({animation: true});
+        });
+        
+        // Helper function to reset all filters
+        function resetFilters() {
+            network.body.data.nodes.clear();
+            network.body.data.nodes.add(Array.from(allNodes.values()));
+            
+            network.body.data.edges.clear();
+            network.body.data.edges.add(Array.from(allEdges.values()));
+            
+            network.fit({animation: true});
+        }
+    });
+</script>
+{% endblock %}

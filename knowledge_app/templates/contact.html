@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.contact-header {
+    background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+    color: white;
+    padding: 3rem 0;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+}
+
+.contact-form-container {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.contact-card {
+    border-top: 4px solid var(--primary-color);
+    margin-bottom: 2rem;
+}
+
+.contact-info-card {
+    height: 100%;
+    border-left: 4px solid var(--secondary-color);
+}
+
+.contact-icon {
+    font-size: 2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.contact-method {
+    margin-bottom: 2rem;
+}
+
+.contact-method a {
+    color: var(--dark-color);
+    text-decoration: none;
+}
+
+.contact-method a:hover {
+    color: var(--primary-color);
+}
+
+.map-container {
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.faq-item {
+    margin-bottom: 1.5rem;
+}
+
+.faq-question {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.faq-answer {
+    color: #6c757d;
+}
+{% endblock %}
+
+{% block content %}
+<div class="contact-header">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4">Contact Us</h1>
+                <p class="lead">
+                    Have questions about our Knowledge Graph System? We're here to help.
+                </p>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <i class="fas fa-envelope" style="font-size: 8rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="contact-form-container">
+                <div class="card contact-card">
+                    <div class="card-header bg-white">
+                        <h3 class="mb-0">Send Us a Message</h3>
+                    </div>
+                    <div class="card-body">
+                        {% if form_submitted %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle me-2"></i>
+                                Thank you for your message! We'll get back to you as soon as possible.
+                            </div>
+                        {% else %}
+                            <form method="post" id="contactForm">
+                                {% csrf_token %}
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label for="name" class="form-label">Your Name</label>
+                                        <input type="text" class="form-control" id="name" name="name" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="email" class="form-label">Email Address</label>
+                                        <input type="email" class="form-control" id="email" name="email" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Subject</label>
+                                    <input type="text" class="form-control" id="subject" name="subject" required>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="message" class="form-label">Message</label>
+                                    <textarea class="form-control" id="message" name="message" rows="5" required></textarea>
+                                </div>
+                                
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="copy" name="copy">
+                                    <label class="form-check-label" for="copy">
+                                        Send me a copy of this message
+                                    </label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-paper-plane me-2"></i>Send Message
+                                </button>
+                            </form>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-4">
+            <div class="card contact-info-card">
+                <div class="card-body">
+                    <h3 class="mb-4">Contact Information</h3>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-envelope"></i>
+                        </div>
+                        <h5>Email Us</h5>
+                        <p><a href="mailto:info@knowledgegraph.edu">info@knowledgegraph.edu</a></p>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-phone-alt"></i>
+                        </div>
+                        <h5>Call Us</h5>
+                        <p><a href="tel:+1234567890">+1 (234) 567-890</a></p>
+                    </div>
+                    
+                    <div class="contact-method">
+                        <div class="contact-icon">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <h5>Visit Us</h5>
+                        <p>123 Education Avenue<br>Knowledge City, KG 12345</p>
+                    </div>
+                    
+                    <div class="contact-method mb-0">
+                        <div class="contact-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
+                        <h5>Hours</h5>
+                        <p>Monday - Friday: 9AM - 5PM<br>Saturday - Sunday: Closed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Map Section -->
+    <div class="map-container">
+        <!-- Replace with actual map embed code -->
+        <div class="bg-light h-100 d-flex justify-content-center align-items-center">
+            <p class="text-muted">Map would be displayed here</p>
+        </div>
+    </div>
+    
+    <!-- FAQ Section -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h3 class="mb-0">Frequently Asked Questions</h3>
+        </div>
+        <div class="card-body">
+            <div class="faq-item">
+                <div class="faq-question">What is a knowledge graph?</div>
+                <div class="faq-answer">
+                    A knowledge graph is a type of database that stores information in a graph structure, using nodes to represent entities and edges to represent relationships between them. In our system, we use knowledge graphs to visualize connections between course content and ideological elements.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">How can I contribute to the knowledge graph?</div>
+                <div class="faq-answer">
+                    After creating an account, you can add new knowledge nodes, create relationships between existing nodes, and participate in discussions. Your contributions help enrich the educational content for everyone.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">Is there a mobile app available?</div>
+                <div class="faq-answer">
+                    Currently, we offer a mobile-optimized web application that works well on smartphones and tablets. A dedicated mobile app is planned for future development.
+                </div>
+            </div>
+            
+            <div class="faq-item">
+                <div class="faq-question">How can I use the system for my own courses?</div>
+                <div class="faq-answer">
+                    Educators can create custom learning paths and knowledge structures for their courses. Contact us for information about institutional licenses and custom implementations.
+                </div>
+            </div>
+            
+            <div class="faq-item mb-0">
+                <div class="faq-question">How is the content moderated?</div>
+                <div class="faq-answer">
+                    Our system uses a combination of automated tools and human reviewers to ensure content quality and accuracy. Editors and administrators review contributions to maintain educational standards.
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Social Media -->
+    <div class="card text-center mb-4">
+        <div class="card-body py-4">
+            <h3 class="mb-4">Connect With Us</h3>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="d-flex justify-content-center gap-4">
+                        <a href="#" class="text-decoration-none">
+                            <i class="fab fa-facebook-square fa-3x text-primary"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="fab fa-twitter-square fa-3x text-info"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="fab fa-linkedin fa-3x text-primary"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="fab fa-youtube-square fa-3x text-danger"></i>
+                        </a>
+                        <a href="#" class="text-decoration-none">
+                            <i class="fab fa-github-square fa-3x text-dark"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const contactForm = document.getElementById('contactForm');
+        
+        if (contactForm) {
+            contactForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                // In a real implementation, you would send the form data via AJAX
+                // This is a simplified simulation for demonstration purposes
+                
+                // Show loading state
+                const submitButton = contactForm.querySelector('button[type="submit"]');
+                const originalButtonText = submitButton.innerHTML;
+                submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sending...';
+                submitButton.disabled = true;
+                
+                // Simulate form submission delay
+                setTimeout(function() {
+                    // Replace form with success message
+                    const formContainer = contactForm.parentElement;
+                    formContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Thank you for your message! We'll get back to you as soon as possible.
+                        </div>
+                    `;
+                }, 1500);
+            });
+        }
+    });
+</script>
+{% endblock %}

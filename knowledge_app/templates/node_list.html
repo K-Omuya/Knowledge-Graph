@@ -1,0 +1,196 @@
+{% extends 'base.html' %}
+
+{% block title %}Knowledge Nodes - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.node-filters {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.node-card {
+    transition: all 0.3s ease;
+    border-left: 4px solid transparent;
+}
+
+.node-card.course {
+    border-left-color: var(--primary-color);
+}
+
+.node-card.ideology {
+    border-left-color: var(--secondary-color);
+}
+
+.node-type-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
+.node-description {
+    max-height: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.card-footer {
+    background-color: transparent;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 3rem;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    margin-top: 2rem;
+}
+
+.empty-state i {
+    font-size: 4rem;
+    color: #dee2e6;
+    margin-bottom: 1rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Knowledge Nodes</h1>
+    <a href="{% url 'node-create' %}" class="btn btn-primary">
+        <i class="fas fa-plus-circle me-2"></i>Add New Node
+    </a>
+</div>
+
+<!-- Filters Section -->
+<div class="node-filters">
+    <form method="get" class="row g-3">
+        <div class="col-md-4">
+            <label for="type" class="form-label">Node Type</label>
+            <select class="form-select" id="type" name="type">
+                <option value="">All Types</option>
+                {% for type_value, type_name in node_types %}
+                <option value="{{ type_value }}" {% if request.GET.type == type_value %}selected{% endif %}>
+                    {{ type_name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label for="search" class="form-label">Search</label>
+            <input type="text" class="form-control" id="search" name="search" 
+                   placeholder="Search by title or description..." value="{{ request.GET.search|default:'' }}">
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">
+                <i class="fas fa-filter me-2"></i>Apply Filters
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Nodes List -->
+{% if nodes %}
+    <div class="row">
+        {% for node in nodes %}
+            <div class="col-lg-6 mb-4">
+                <div class="card node-card {% if node.knowledge_type == 'COURSE' %}course{% else %}ideology{% endif %}">
+                    <div class="card-body position-relative">
+                        <span class="badge node-type-badge {% if node.knowledge_type == 'COURSE' %}badge-course{% else %}badge-ideology{% endif %}">
+                            {% if node.knowledge_type == 'COURSE' %}Course{% else %}Ideology{% endif %}
+                        </span>
+                        <h5 class="card-title">{{ node.title }}</h5>
+                        <p class="card-text node-description">{{ node.description }}</p>
+                    </div>
+                    <div class="card-footer d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Created: {{ node.created_at|date:"M d, Y" }}</small>
+                        <div>
+                            <a href="{% url 'node-detail' node.id %}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-eye me-1"></i>View
+                            </a>
+                            <a href="{% url 'node-update' node.id %}" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit me-1"></i>Edit
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page=1{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="First">
+                        <span aria-hidden="true">&laquo;&laquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Previous">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;&laquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&laquo;</span>
+                </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Next">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                </li>
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.type %}&type={{ request.GET.type }}{% endif %}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}" aria-label="Last">
+                        <span aria-hidden="true">&raquo;&raquo;</span>
+                    </a>
+                </li>
+            {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;</span>
+                </li>
+                <li class="page-item disabled">
+                    <span class="page-link">&raquo;&raquo;</span>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-database"></i>
+        <h3>No Knowledge Nodes Found</h3>
+        <p class="text-muted">There are no nodes matching your search criteria.</p>
+        <div class="mt-3">
+            <a href="{% url 'node-list' %}" class="btn btn-outline-secondary me-2">
+                <i class="fas fa-sync-alt me-2"></i>Clear Filters
+            </a>
+            <a href="{% url 'node-create' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Add New Node
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}

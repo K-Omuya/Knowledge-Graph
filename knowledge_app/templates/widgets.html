@@ -1,0 +1,106 @@
+<!-- widget.html - A reusable widget template -->
+<div class="widget {% if widget_class %}{{ widget_class }}{% endif %}">
+    <div class="widget-header">
+        <h3 class="widget-title">{{ widget_title }}</h3>
+        {% if widget_actions %}
+        <div class="widget-actions">
+            {% for action in widget_actions %}
+            <a href="{{ action.url }}" class="btn btn-sm {{ action.class|default:'btn-outline-secondary' }}" {% if action.id %}id="{{ action.id }}"{% endif %}>
+                {% if action.icon %}<i class="fas fa-{{ action.icon }} me-1"></i>{% endif %}
+                {{ action.label }}
+            </a>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="widget-body">
+        {% if widget_content %}
+            {{ widget_content|safe }}
+        {% else %}
+            {% block widget_content %}
+            <!-- Default empty content -->
+            <p class="text-muted text-center py-3">No content available</p>
+            {% endblock %}
+        {% endif %}
+    </div>
+    
+    {% if widget_footer %}
+    <div class="widget-footer">
+        {{ widget_footer|safe }}
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .widget {
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+        overflow: hidden;
+    }
+    
+    .widget-header {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .widget-title {
+        margin: 0;
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+    
+    .widget-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .widget-body {
+        padding: 1rem;
+    }
+    
+    .widget-footer {
+        padding: 0.75rem 1rem;
+        background-color: #f8f9fa;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    /* Widget variations */
+    .widget-primary {
+        border-top: 3px solid #3498db;
+    }
+    
+    .widget-success {
+        border-top: 3px solid #2ecc71;
+    }
+    
+    .widget-warning {
+        border-top: 3px solid #f39c12;
+    }
+    
+    .widget-danger {
+        border-top: 3px solid #e74c3c;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .widget-header {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        
+        .widget-actions {
+            margin-top: 0.5rem;
+            width: 100%;
+        }
+        
+        .widget-actions .btn {
+            flex: 1;
+        }
+    }
+</style>

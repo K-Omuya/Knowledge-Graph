@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Import/Export - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.import-export-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.section-header {
+    border-left: 4px solid var(--primary-color);
+    padding-left: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.export-card {
+    transition: all 0.3s ease;
+    height: 100%;
+}
+
+.export-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.file-upload-container {
+    border: 2px dashed #dee2e6;
+    border-radius: 5px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-bottom: 1.5rem;
+}
+
+.file-upload-container:hover {
+    border-color: var(--primary-color);
+}
+
+.file-upload-container.dragover {
+    background-color: rgba(52, 152, 219, 0.05);
+    border-color: var(--primary-color);
+}
+
+.upload-icon {
+    font-size: 3rem;
+    color: #adb5bd;
+    margin-bottom: 1rem;
+}
+
+.format-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 0.8rem;
+}
+
+.import-history-table {
+    font-size: 0.9rem;
+}
+
+.import-history-table th, .import-history-table td {
+    vertical-align: middle;
+}
+{% endblock %}
+
+{% block content %}
+<div class="import-export-container">
+    <div class="section-header mb-4">
+        <h1>Import & Export</h1>
+        <p class="text-muted">
+            Transfer knowledge graph data between systems or create backups of your data.
+        </p>
+    </div>
+    
+    <!-- Export Section -->
+    <div class="card mb-5">
+        <div class="card-header">
+            <h3 class="mb-0">Export Knowledge Graph</h3>
+        </div>
+        <div class="card-body">
+            <p>Select a format to export your knowledge graph data:</p>
+            
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="card export-card">
+                        <div class="card-body text-center">
+                            <span class="format-badge badge bg-primary">Recommended</span>
+                            <div class="display-1 text-primary mb-3">
+                                <i class="fas fa-file-code"></i>
+                            </div>
+                            <h4>JSON</h4>
+                            <p class="text-muted">
+                                Complete data export with all relationships and attributes in JSON format.
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'export-graph' format='json' %}" class="btn btn-primary w-100">
+                                <i class="fas fa-download me-2"></i>Export as JSON
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card export-card">
+                        <div class="card-body text-center">
+                            <div class="display-1 text-success mb-3">
+                                <i class="fas fa-file-csv"></i>
+                            </div>
+                            <h4>CSV</h4>
+                            <p class="text-muted">
+                                Export nodes and relationships as separate CSV files (zipped archive).
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'export-graph' format='csv' %}" class="btn btn-success w-100">
+                                <i class="fas fa-download me-2"></i>Export as CSV
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="card export-card">
+                        <div class="card-body text-center">
+                            <div class="display-1 text-warning mb-3">
+                                <i class="fas fa-sitemap"></i>
+                            </div>
+                            <h4>GraphML</h4>
+                            <p class="text-muted">
+                                Standard graph exchange format, compatible with graph visualization tools.
+                            </p>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <a href="{% url 'export-graph' format='graphml' %}" class="btn btn-warning w-100">
+                                <i class="fas fa-download me-2"></i>Export as GraphML
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="alert alert-info mt-3">
+                <i class="fas fa-info-circle me-2"></i>
+                Exports include all nodes, relationships, and their attributes. User-specific data like learning progress and activities are not included.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import Section -->
+    <div class="card mb-5">
+        <div class="card-header">
+            <h3 class="mb-0">Import Knowledge Graph</h3>
+        </div>
+        <div class="card-body">
+            <p>Upload a file to import nodes and relationships into your knowledge graph:</p>
+            
+            <form method="post" action="{% url 'import-graph' %}" enctype="multipart/form-data" id="importForm">
+                {% csrf_token %}
+                
+                <div class="file-upload-container" id="dropZone">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h5>Drag & Drop File Here</h5>
+                    <p class="text-muted">or</p>
+                    <input type="file" name="import_file" id="importFile" class="d-none" accept=".json,.csv,.zip,.graphml,.xml">
+                    <button type="button" class="btn btn-outline-primary" id="browseButton">
+                        <i class="fas fa-folder-open me-2"></i>Browse Files
+                    </button>
+                    <div id="selectedFile" class="mt-3 text-success"></div>
+                </div>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <label for="importType" class="form-label">File Type:</label>
+                        <select class="form-select" id="importType" name="import_type">
+                            <option value="json">JSON</option>
+                            <option value="csv">CSV (Zipped)</option>
+                            <option value="graphml">GraphML</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="conflictResolution" class="form-label">Conflict Resolution:</label>
+                        <select class="form-select" id="conflictResolution" name="conflict_resolution">
+                            <option value="skip">Skip existing items</option>
+                            <option value="update">Update existing items</option>
+                            <option value="duplicate">Create duplicates</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg" id="importButton" disabled>
+                        <i class="fas fa-upload me-2"></i>Import Data
+                    </button>
+                </div>
+            </form>
+            
+            <div class="alert alert-warning mt-4">
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                <strong>Warning:</strong> Importing large datasets may take some time. Please do not close your browser during import.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Import History -->
+    {% if import_history %}
+    <div class="card">
+        <div class="card-header">
+            <h3 class="mb-0">Import History</h3>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover import-history-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>File Name</th>
+                            <th>Format</th>
+                            <th>Added</th>
+                            <th>Updated</th>
+                            <th>Skipped</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for import_record in import_history %}
+                        <tr>
+                            <td>{{ import_record.created_at|date:"M d, Y H:i" }}</td>
+                            <td>{{ import_record.file_name }}</td>
+                            <td>
+                                <span class="badge {% if import_record.file_format == 'json' %}bg-primary{% elif import_record.file_format == 'csv' %}bg-success{% else %}bg-warning{% endif %}">
+                                    {{ import_record.file_format|upper }}
+                                </span>
+                            </td>
+                            <td>{{ import_record.items_added }}</td>
+                            <td>{{ import_record.items_updated }}</td>
+                            <td>{{ import_record.items_skipped }}</td>
+                            <td>
+                                <span class="badge {% if import_record.status == 'success' %}bg-success{% elif import_record.status == 'partial' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ import_record.get_status_display }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const dropZone = document.getElementById('dropZone');
+        const importFile = document.getElementById('importFile');
+        const browseButton = document.getElementById('browseButton');
+        const selectedFile = document.getElementById('selectedFile');
+        const importButton = document.getElementById('importButton');
+        const importType = document.getElementById('importType');
+        
+        // Open file dialog when browse button is clicked
+        browseButton.addEventListener('click', function() {
+            importFile.click();
+        });
+        
+        // Display selected file name
+        importFile.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const fileName = this.files[0].name;
+                selectedFile.textContent = fileName;
+                importButton.disabled = false;
+                
+                // Auto-select import type based on file extension
+                const extension = fileName.split('.').pop().toLowerCase();
+                if (extension === 'json') {
+                    importType.value = 'json';
+                } else if (extension === 'zip' || extension === 'csv') {
+                    importType.value = 'csv';
+                } else if (extension === 'graphml' || extension === 'xml') {
+                    importType.value = 'graphml';
+                }
+            } else {
+                selectedFile.textContent = '';
+                importButton.disabled = true;
+            }
+        });
+        
+        // Handle drag and drop
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+        
+        dropZone.addEventListener('dragleave', function() {
+            dropZone.classList.remove('dragover');
+        });
+        
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            if (e.dataTransfer.files.length > 0) {
+                importFile.files = e.dataTransfer.files;
+                
+                // Trigger the change event manually
+                const event = new Event('change');
+                importFile.dispatchEvent(event);
+            }
+        });
+    });
+</script>
+{% endblock %}

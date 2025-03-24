@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.auth-container {
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.auth-card {
+    border-top: 4px solid var(--secondary-color);
+}
+
+.auth-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.auth-icon {
+    font-size: 4rem;
+    color: var(--secondary-color);
+    margin-bottom: 1rem;
+}
+
+.auth-form .form-group {
+    margin-bottom: 1.5rem;
+}
+
+.auth-form label {
+    font-weight: 500;
+}
+
+.auth-form .errorlist {
+    color: var(--danger-color);
+    padding-left: 0;
+    list-style: none;
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+
+.auth-links {
+    text-align: center;
+    margin-top: 1.5rem;
+}
+
+.auth-form .helptext {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    display: block;
+}
+
+.password-strength {
+    height: 5px;
+    border-radius: 2px;
+    margin-top: 0.5rem;
+    background-color: #e9ecef;
+    overflow: hidden;
+}
+
+.password-strength-meter {
+    height: 100%;
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.strength-weak {
+    background-color: #dc3545;
+    width: 25%;
+}
+
+.strength-fair {
+    background-color: #ffc107;
+    width: 50%;
+}
+
+.strength-good {
+    background-color: #28a745;
+    width: 75%;
+}
+
+.strength-strong {
+    background-color: #198754;
+    width: 100%;
+}
+{% endblock %}
+
+{% block content %}
+<div class="auth-container">
+    <div class="auth-header">
+        <div class="auth-icon">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <h1>Create Account</h1>
+        <p class="text-muted">Join Knowledge Graph System</p>
+    </div>
+
+    <div class="card auth-card">
+        <div class="card-body p-4">
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                Please correct the errors below.
+            </div>
+            {% endif %}
+            
+            <form method="post" class="auth-form">
+                {% csrf_token %}
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_first_name" class="form-label">First Name</label>
+                            <input type="text" name="first_name" maxlength="150" id="id_first_name" class="form-control">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="id_last_name" class="form-label">Last Name</label>
+                            <input type="text" name="last_name" maxlength="150" id="id_last_name" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_username" class="form-label">Username</label>
+                    <input type="text" name="username" autofocus autocapitalize="none" autocomplete="username" maxlength="150" required id="id_username" class="form-control">
+                    {% if form.username.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.username.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <small class="helptext">Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_email" class="form-label">Email</label>
+                    <input type="email" name="email" autocomplete="email" required id="id_email" class="form-control">
+                    {% if form.email.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.email.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password1" class="form-label">Password</label>
+                    <input type="password" name="password1" autocomplete="new-password" required id="id_password1" class="form-control">
+                    {% if form.password1.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password1.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    
+                    <div class="password-strength">
+                        <div class="password-strength-meter" id="password-meter"></div>
+                    </div>
+                    
+                    <small class="helptext" id="password-helptext">
+                        Your password should be at least 8 characters long, and can't be entirely numeric.
+                    </small>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password2" class="form-label">Confirm Password</label>
+                    <input type="password" name="password2" autocomplete="new-password" required id="id_password2" class="form-control">
+                    {% if form.password2.errors %}
+                    <ul class="errorlist">
+                        {% for error in form.password2.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% endif %}
+                    <small class="helptext">Enter the same password as before, for verification.</small>
+                </div>
+                
+                <div class="form-group">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="terms-agree" required>
+                        <label class="form-check-label" for="terms-agree">
+                            I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms and Conditions</a>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </button>
+                </div>
+            </form>
+            
+            <div class="auth-links">
+                <p>Already have an account? <a href="{% url 'login' %}" class="text-primary">Sign in</a></p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'index' %}" class="text-decoration-none">
+            <i class="fas fa-arrow-left me-2"></i>Back to Home
+        </a>
+    </div>
+</div>
+
+<!-- Terms and Conditions Modal -->
+<div class="modal fade" id="termsModal" tabindex="-1" aria-labelledby="termsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="termsModalLabel">Terms and Conditions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <h5>1. Acceptance of Terms</h5>
+                <p>By accessing and using the Knowledge Graph System, you agree to be bound by these Terms and Conditions and all applicable laws and regulations.</p>
+                
+                <h5>2. Use of Content</h5>
+                <p>All content provided through the Knowledge Graph System is for educational purposes only. Users may contribute to the system by adding knowledge nodes and relationships, but all contributions must adhere to academic standards and be free of inappropriate content.</p>
+                
+                <h5>3. User Accounts</h5>
+                <p>Users are responsible for maintaining the confidentiality of their account credentials and for all activities that occur under their account. Users must notify the administrators immediately of any unauthorized use of their account.</p>
+                
+                <h5>4. Privacy</h5>
+                <p>The Knowledge Graph System collects and uses personal information according to our Privacy Policy. By using this system, you consent to such collection and use of information.</p>
+                
+                <h5>5. Intellectual Property</h5>
+                <p>The system and its original content, features, and functionality are owned by the Knowledge Graph System creators and are protected by international copyright, trademark, patent, trade secret, and other intellectual property laws.</p>
+                
+                <h5>6. Termination</h5>
+                <p>We may terminate or suspend your account and access to the system immediately, without prior notice or liability, for any reason, including without limitation if you breach these Terms and Conditions.</p>
+                
+                <h5>7. Limitation of Liability</h5>
+                <p>In no event shall the Knowledge Graph System, its operators, or contributors be liable for any indirect, incidental, special, consequential, or punitive damages, including but not limited to loss of profits, data, use, goodwill, or other intangible losses.</p>
+                
+                <h5>8. Changes to Terms</h5>
+                <p>We reserve the right to modify or replace these Terms and Conditions at any time. It is your responsibility to check these Terms and Conditions periodically for changes.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">I Understand</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const passwordInput = document.getElementById('id_password1');
+        const passwordMeter = document.getElementById('password-meter');
+        const passwordHelpText = document.getElementById('password-helptext');
+        
+        passwordInput.addEventListener('input', function() {
+            const password = this.value;
+            let strength = 0;
+            let feedback = "Your password should be at least 8 characters long, and can't be entirely numeric.";
+            
+            // Length check
+            if (password.length >= 8) {
+                strength += 1;
+            } else {
+                feedback = "Password is too short. Add more characters.";
+            }
+            
+            // Complexity checks
+            if (password.match(/[A-Z]/)) strength += 1;
+            if (password.match(/[a-z]/)) strength += 1;
+            if (password.match(/[0-9]/)) strength += 1;
+            if (password.match(/[^A-Za-z0-9]/)) strength += 1;
+            
+            // Update meter
+            passwordMeter.className = 'password-strength-meter';
+            if (password.length === 0) {
+                passwordMeter.style.width = '0%';
+            } else if (strength === 1) {
+                passwordMeter.classList.add('strength-weak');
+                feedback = "Weak password. Try adding numbers, symbols, and uppercase letters.";
+            } else if (strength === 2) {
+                passwordMeter.classList.add('strength-fair');
+                feedback = "Fair password. Add more variety for better security.";
+            } else if (strength === 3 || strength === 4) {
+                passwordMeter.classList.add('strength-good');
+                feedback = "Good password. You're on the right track!";
+            } else if (strength >= 5) {
+                passwordMeter.classList.add('strength-strong');
+                feedback = "Strong password. Excellent job!";
+            }
+            
+            passwordHelpText.textContent = feedback;
+        });
+    });
+</script>
+{% endblock %}

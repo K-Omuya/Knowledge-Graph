@@ -1,0 +1,286 @@
+{% extends 'base.html' %}
+
+{% block title %}My Activity - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.activity-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.activity-header {
+    margin-bottom: 2rem;
+}
+
+.activity-timeline {
+    position: relative;
+    margin-left: 25px;
+}
+
+.activity-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.activity-item {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 1.5rem;
+}
+
+.activity-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+}
+
+.activity-view::before {
+    background-color: #6c757d;
+}
+
+.activity-create::before {
+    background-color: #28a745;
+}
+
+.activity-edit::before {
+    background-color: #fd7e14;
+}
+
+.activity-delete::before {
+    background-color: #dc3545;
+}
+
+.activity-comment::before {
+    background-color: #17a2b8;
+}
+
+.activity-complete::before {
+    background-color: #6f42c1;
+}
+
+.activity-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+
+.activity-date-group {
+    position: relative;
+    margin-top: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.activity-date-group::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 50%;
+    width: 20px;
+    height: 2px;
+    background-color: #dee2e6;
+}
+
+.activity-filter-bar {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 2rem;
+}
+{% endblock %}
+
+{% block content %}
+<div class="activity-container">
+    <!-- Activity Header -->
+    <div class="d-flex justify-content-between align-items-center activity-header">
+        <div>
+            <h1>My Activity</h1>
+            <p class="text-muted">Track your interactions with the knowledge graph system</p>
+        </div>
+        <a href="{% url 'user-profile' %}" class="btn btn-outline-primary">
+            <i class="fas fa-user me-2"></i>Back to Profile
+        </a>
+    </div>
+    
+    <!-- Activity Filters -->
+    <div class="activity-filter-bar">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="activity_type" class="form-label">Activity Type</label>
+                <select class="form-select" id="activity_type" name="activity_type">
+                    <option value="">All Activities</option>
+                    <option value="VIEW" {% if request.GET.activity_type == 'VIEW' %}selected{% endif %}>Viewed</option>
+                    <option value="CREATE" {% if request.GET.activity_type == 'CREATE' %}selected{% endif %}>Created</option>
+                    <option value="EDIT" {% if request.GET.activity_type == 'EDIT' %}selected{% endif %}>Edited</option>
+                    <option value="DELETE" {% if request.GET.activity_type == 'DELETE' %}selected{% endif %}>Deleted</option>
+                    <option value="COMMENT" {% if request.GET.activity_type == 'COMMENT' %}selected{% endif %}>Comments</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="content_type" class="form-label">Content Type</label>
+                <select class="form-select" id="content_type" name="content_type">
+                    <option value="">All Content</option>
+                    <option value="node" {% if request.GET.content_type == 'node' %}selected{% endif %}>Knowledge Nodes</option>
+                    <option value="relationship" {% if request.GET.content_type == 'relationship' %}selected{% endif %}>Relationships</option>
+                    <option value="learning_path" {% if request.GET.content_type == 'learning_path' %}selected{% endif %}>Learning Paths</option>
+                    <option value="learning_step" {% if request.GET.content_type == 'learning_step' %}selected{% endif %}>Learning Steps</option>
+                    <option value="quiz" {% if request.GET.content_type == 'quiz' %}selected{% endif %}>Quizzes</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fas fa-filter me-2"></i>Apply Filters
+                </button>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Activity Timeline -->
+    {% if page_obj %}
+        <div class="activity-timeline">
+            {% regroup page_obj by timestamp.date as activity_days %}
+            
+            {% for day in activity_days %}
+                <div class="activity-date-group">
+                    <h5>{{ day.grouper|date:"F d, Y" }}</h5>
+                </div>
+                
+                {% for activity in day.list %}
+                    <div class="activity-item activity-{{ activity.activity_type|lower }}">
+                        <div class="activity-time">{{ activity.timestamp|time:"H:i" }}</div>
+                        <div class="activity-content">
+                            <div class="d-flex align-items-center">
+                                <span class="badge 
+                                    {% if activity.activity_type == 'VIEW' %}bg-secondary
+                                    {% elif activity.activity_type == 'CREATE' %}bg-success
+                                    {% elif activity.activity_type == 'EDIT' %}bg-warning
+                                    {% elif activity.activity_type == 'DELETE' %}bg-danger
+                                    {% elif activity.activity_type == 'COMMENT' %}bg-info
+                                    {% else %}bg-primary{% endif %} me-2">
+                                    {{ activity.get_activity_type_display }}
+                                </span>
+                                
+                                <span class="badge bg-light text-dark">
+                                    {{ activity.content_type|title }}
+                                </span>
+                            </div>
+                            
+                            <div class="mt-2">
+                                {% if activity.content_type == 'node' %}
+                                    <a href="{% url 'node-detail' activity.object_id %}">
+                                        {{ activity.details|default:"Unnamed node" }}
+                                    </a>
+                                {% elif activity.content_type == 'relationship' %}
+                                    {% if activity.object_id %}
+                                        <a href="{% url 'relationship-detail' activity.object_id %}">
+                                            {{ activity.details|default:"Relationship details" }}
+                                        </a>
+                                    {% else %}
+                                        {{ activity.details|default:"Relationship details" }}
+                                    {% endif %}
+                                {% elif activity.content_type == 'learning_path' %}
+                                    <a href="{% url 'learning-path-detail' activity.object_id %}">
+                                        {{ activity.details|default:"Learning path" }}
+                                    </a>
+                                {% elif activity.content_type == 'learning_step' %}
+                                    Learning step: {{ activity.details|default:"Step details" }}
+                                {% elif activity.content_type == 'quiz' %}
+                                    <a href="{% url 'quiz-detail' activity.object_id %}">
+                                        {{ activity.details|default:"Quiz" }}
+                                    </a>
+                                {% else %}
+                                    {{ activity.details|default:"Activity details" }}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endfor %}
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1{% if request.GET.activity_type %}&activity_type={{ request.GET.activity_type }}{% endif %}{% if request.GET.content_type %}&content_type={{ request.GET.content_type }}{% endif %}" aria-label="First">
+                            <span aria-hidden="true">&laquo;&laquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.activity_type %}&activity_type={{ request.GET.activity_type }}{% endif %}{% if request.GET.content_type %}&content_type={{ request.GET.content_type }}{% endif %}" aria-label="Previous">
+                            <span aria-hidden="true">&laquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;&laquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">&laquo;</span>
+                    </li>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if request.GET.activity_type %}&activity_type={{ request.GET.activity_type }}{% endif %}{% if request.GET.content_type %}&content_type={{ request.GET.content_type }}{% endif %}">{{ num }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.activity_type %}&activity_type={{ request.GET.activity_type }}{% endif %}{% if request.GET.content_type %}&content_type={{ request.GET.content_type }}{% endif %}" aria-label="Next">
+                            <span aria-hidden="true">&raquo;</span>
+                        </a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if request.GET.activity_type %}&activity_type={{ request.GET.activity_type }}{% endif %}{% if request.GET.content_type %}&content_type={{ request.GET.content_type }}{% endif %}" aria-label="Last">
+                            <span aria-hidden="true">&raquo;&raquo;</span>
+                        </a>
+                    </li>
+                {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;</span>
+                    </li>
+                    <li class="page-item disabled">
+                        <span class="page-link">&raquo;&raquo;</span>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-history mb-4" style="font-size: 5rem; color: #dee2e6;"></i>
+            <h3>No Activity Found</h3>
+            <p class="text-muted">
+                {% if request.GET.activity_type or request.GET.content_type %}
+                    No activities match your filter criteria.
+                {% else %}
+                    You haven't performed any activities yet. Start exploring the knowledge graph!
+                {% endif %}
+            </p>
+            {% if request.GET.activity_type or request.GET.content_type %}
+                <div class="mt-4">
+                    <a href="{% url 'my-activity' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-sync-alt me-2"></i>Clear Filters
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

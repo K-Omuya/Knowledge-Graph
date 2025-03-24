@@ -1,0 +1,490 @@
+{% extends 'base.html' %}
+
+{% block title %}Home - Knowledge Graph System{% endblock %}
+
+{% block custom_css %}
+.hero-section {
+    background: linear-gradient(135deg, var(--dark-color), var(--primary-color));
+    color: white;
+    padding: 3rem 0;
+    border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+}
+
+.hero-section h1 {
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.stats-card {
+    border-left: 4px solid var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    border-left-width: 8px;
+}
+
+.stats-card i {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.quick-actions .card {
+    min-height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.quick-actions i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.feature-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+}
+
+.learning-paths-section {
+    background-color: #f0f7ff;
+    border-radius: 10px;
+    padding: 2rem 0;
+    margin-bottom: 2rem;
+}
+
+.path-card {
+    border-top: 4px solid var(--secondary-color);
+}
+
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+}
+
+.recommendation-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background-color: var(--warning-color);
+    color: white;
+    font-size: 0.8rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 30px;
+}
+
+.recent-activity-section {
+    background-color: #f9f9f9;
+    border-radius: 10px;
+    padding: 2rem;
+}
+
+.activity-timeline {
+    position: relative;
+    margin-left: 25px;
+}
+
+.activity-timeline::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 2px;
+    background-color: #dee2e6;
+}
+
+.activity-item {
+    position: relative;
+    padding-left: 30px;
+    margin-bottom: 1.5rem;
+}
+
+.activity-item::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: var(--primary-color);
+}
+
+.activity-time {
+    font-size: 0.8rem;
+    color: #6c757d;
+}
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container py-4">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="display-4">Knowledge Graph for Course Ideological & Political Education</h1>
+                <p class="lead">
+                    Explore connections between technical knowledge and ideological elements through our interactive graph visualization system.
+                </p>
+                <div class="d-flex gap-3 mt-4">
+                    <a href="{% url 'graph-visualization' %}" class="btn btn-light btn-lg">
+                        <i class="fas fa-project-diagram me-2"></i>Explore Graph
+                    </a>
+                    <a href="{% url 'learning-paths' %}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-graduation-cap me-2"></i>Learning Paths
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-4 d-none d-lg-block text-center">
+                <i class="fas fa-project-diagram" style="font-size: 10rem; opacity: 0.8;"></i>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Course Knowledge</h5>
+                        <h2 class="mb-0">{{ course_nodes_count }}</h2>
+                    </div>
+                    <i class="fas fa-book text-primary"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100" style="border-left-color: var(--secondary-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Ideological Elements</h5>
+                        <h2 class="mb-0">{{ ideology_nodes_count }}</h2>
+                    </div>
+                    <i class="fas fa-lightbulb text-success"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100" style="border-left-color: var(--warning-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Relationships</h5>
+                        <h2 class="mb-0">{{ relationships_count }}</h2>
+                    </div>
+                    <i class="fas fa-link text-warning"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card h-100" style="border-left-color: var(--danger-color);">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="card-title">Learning Paths</h5>
+                        <h2 class="mb-0">{{ learning_paths_count }}</h2>
+                    </div>
+                    <i class="fas fa-graduation-cap text-danger"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4">Quick Actions</h2>
+    </div>
+    <div class="col-md-3 quick-actions">
+        <a href="{% url 'node-create' %}?type=COURSE" class="text-decoration-none">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-book text-primary"></i>
+                    <h5 class="card-title">Add Course Node</h5>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 quick-actions">
+        <a href="{% url 'node-create' %}?type=IDEOLOGY" class="text-decoration-none">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-lightbulb text-success"></i>
+                    <h5 class="card-title">Add Ideology Node</h5>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 quick-actions">
+        <a href="{% url 'relationship-create' %}" class="text-decoration-none">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-link text-warning"></i>
+                    <h5 class="card-title">Create Relationship</h5>
+                </div>
+            </div>
+        </a>
+    </div>
+    <div class="col-md-3 quick-actions">
+        <a href="{% url 'advanced-visualization' %}" class="text-decoration-none">
+            <div class="card text-center">
+                <div class="card-body">
+                    <i class="fas fa-project-diagram text-info"></i>
+                    <h5 class="card-title">Advanced Graph</h5>
+                </div>
+            </div>
+        </a>
+    </div>
+</div>
+
+<!-- Learning Paths Section -->
+{% if user.is_authenticated and recommended_paths %}
+<div class="learning-paths-section py-4 mb-5">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Recommended Learning Paths</h2>
+            <a href="{% url 'learning-paths' %}" class="btn btn-outline-primary">View All Paths</a>
+        </div>
+        
+        <div class="row">
+            {% for path in recommended_paths %}
+            <div class="col-md-4 mb-4">
+                <div class="card h-100 path-card">
+                    <div class="card-body">
+                        <span class="recommendation-badge">Recommended</span>
+                        <h5 class="card-title">{{ path.title }}</h5>
+                        <p class="card-text text-muted">{{ path.description|truncatechars:100 }}</p>
+                        
+                        {% if path.user_progress %}
+                        <div class="mt-3">
+                            <small class="text-muted d-block mb-1">Your progress</small>
+                            <div class="progress mb-2">
+                                <div class="progress-bar bg-success" role="progressbar" style="width: {{ path.user_progress.completion_percentage }}%"></div>
+                            </div>
+                            <small class="text-muted">{{ path.user_progress.completion_percentage|floatformat:0 }}% complete</small>
+                        </div>
+                        {% endif %}
+                        
+                        <div class="d-flex mt-3">
+                            <small class="text-muted me-3">
+                                <i class="fas fa-tasks me-1"></i> {{ path.node_count }} steps
+                            </small>
+                            <small class="text-muted">
+                                <i class="fas fa-clock me-1"></i> {{ path.estimated_time }}
+                            </small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="{% url 'learning-path-detail' path.id %}" class="btn btn-primary w-100">Start Learning</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endif %}
+<!-- Recent Activity Section -->
+{% if user.is_authenticated and recent_activities %}
+<div class="recent-activity-section mb-5">
+    <h2 class="mb-4">Your Recent Activity</h2>
+    
+    <div class="activity-timeline">
+        {% for activity in recent_activities %}
+        <div class="activity-item">
+            <div class="activity-time">{{ activity.timestamp|date:"M d, Y" }} at {{ activity.timestamp|time:"H:i" }}</div>
+            <div class="activity-content">
+                <strong>{{ activity.get_activity_type_display }}</strong> {{ activity.content_type }} 
+                {% if activity.content_type == 'node' %}
+                    <a href="{% url 'node-detail' activity.object_id %}">
+                        {{ activity.details|default:"" }}
+                    </a>
+                {% elif activity.content_type == 'relationship' %}
+                    relationship between nodes
+                {% elif activity.content_type == 'learning_path' %}
+                    <a href="{% url 'learning-path-detail' activity.object_id %}">
+                        {{ activity.details|default:"" }}
+                    </a>
+                {% elif activity.content_type == 'quiz' %}
+                    <a href="{% url 'quiz-detail' activity.object_id %}">
+                        {{ activity.details|default:"" }}
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="text-center mt-4">
+        <a href="{% url 'my-activity' %}" class="btn btn-outline-primary">View All Activity</a>
+    </div>
+</div>
+{% endif %}
+
+<!-- Features Section -->
+<div class="row mb-5">
+    <div class="col-12">
+        <h2 class="mb-4">System Features</h2>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h4>Interactive Knowledge Graph</h4>
+                <p class="text-muted">
+                    Visualize connections between course content and ideological elements 
+                    through an interactive graph interface with multiple visualization options.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+                <h4>Guided Learning Paths</h4>
+                <p class="text-muted">
+                    Follow structured learning paths that guide you through connected concepts,
+                    tracking your progress and recommending related content.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-brain"></i>
+                </div>
+                <h4>Automated Assessments</h4>
+                <p class="text-muted">
+                    Test your understanding of both technical knowledge and ideological elements
+                    through intelligent quizzes generated from the knowledge graph.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h4>Collaborative Learning</h4>
+                <p class="text-muted">
+                    Comment on knowledge nodes, discuss relationships with peers, and
+                    contribute to the growing knowledge graph as a community.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <h4>Rich Content Support</h4>
+                <p class="text-muted">
+                    Enhance your learning with integrated documents, videos, and supporting
+                    materials directly attached to knowledge nodes.
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="feature-icon">
+                    <i class="fas fa-mobile-alt"></i>
+                </div>
+                <h4>Mobile Optimized</h4>
+                <p class="text-muted">
+                    Access the knowledge graph and all learning features on any device,
+                    with a responsive interface designed for touch interaction.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- About Section -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h3 class="card-title mb-4">About This System</h3>
+                <p>
+                    The Knowledge Graph for Course Ideological & Political Education is designed to bridge the gap between technical courses and ideological education. 
+                    By visualizing the connections between course knowledge points and ideological elements, this system helps both teachers and students understand 
+                    how professional skills and values education can be integrated.
+                </p>
+                <p>
+                    This platform offers an innovative approach to curriculum design and learning, promoting the development of both technical proficiency and 
+                    social responsibility among students.
+                </p>
+                
+                <div class="text-center mt-4">
+                    <a href="{% url 'about' %}" class="btn btn-outline-primary">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Additional JavaScript for enhanced interactions
+    document.addEventListener('DOMContentLoaded', function() {
+        // Animate stats counters
+        const statsNumbers = document.querySelectorAll('.stats-card h2');
+        
+        statsNumbers.forEach(number => {
+            const finalValue = parseInt(number.textContent);
+            let startValue = 0;
+            const duration = 1500;
+            const frameDuration = 1000/60;
+            const totalFrames = Math.round(duration/frameDuration);
+            const increment = finalValue / totalFrames;
+            
+            const animateCounter = () => {
+                startValue += increment;
+                if(startValue < finalValue) {
+                    number.textContent = Math.floor(startValue);
+                    requestAnimationFrame(animateCounter);
+                } else {
+                    number.textContent = finalValue;
+                }
+            };
+            
+            // Start animation when element is in viewport
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if(entry.isIntersecting) {
+                        animateCounter();
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            observer.observe(number);
+        });
+    });
+</script>
+{% endblock %}
